@@ -1,6 +1,6 @@
 # Thred API documentation
 
-Mintlify documentation for the phone-call API at `https://api.thred.dev`.
+Mintlify documentation for Thred, the data API for the phone, at `https://api.thred.dev`. The Collect API at `/v1/collect` collects structured answers from a known phone number.
 
 ## Local preview
 
@@ -13,6 +13,8 @@ With the [Mintlify CLI](https://www.mintlify.com/docs/cli/install) installed, ru
 - `api-reference/openapi.json`: the API contract.
 - `api-reference/*.mdx`: endpoint pages using [Mintlify's OpenAPI integration](https://www.mintlify.com/docs/api-playground/openapi-setup).
 - `docs.json`: navigation and Thred's existing branding.
+
+Keep the getting-started content to the two simple examples: business hours and inventory. Document the implemented `to`, `instructions`, and `output_schema` request fields and `call_` IDs. Search is not an available API.
 
 ## Static validation
 

@@ -3,7 +3,7 @@
   "info": {
     "title": "Thred API",
     "version": "1.0.0",
-    "description": "Turn phone calls into structured data. Send a task and output schema, then retrieve the result. Use the same base URL for Development and Production; your API key selects the environment."
+    "description": "Thred is the data API for the phone. Use Collect when you know who to ask: send a phone number, instructions, and an output schema, then retrieve structured JSON. Use the same base URL for Development and Production; your API key selects the environment."
   },
   "servers": [
     {
@@ -22,8 +22,8 @@
       "description": "Verify the workspace and environment selected by your API key."
     },
     {
-      "name": "Calls",
-      "description": "Create calls and retrieve their state and results."
+      "name": "Collect",
+      "description": "Collect structured answers from a known phone number."
     },
     {
       "name": "Usage",
@@ -89,20 +89,20 @@
         }
       }
     },
-    "/v1/calls": {
+    "/v1/collect": {
       "post": {
-        "operationId": "createCall",
+        "operationId": "createCollection",
         "tags": [
-          "Calls"
+          "Collect"
         ],
-        "summary": "Create a call",
-        "description": "Start a call and receive its ID immediately. Retrieve the call for the result, or provide a webhook_id. Reuse the same Idempotency-Key when retrying the same request. Development and Production can both place real calls.",
+        "summary": "Create a collection",
+        "description": "Collect answers from a known phone number. Send instructions and an output schema, then use the returned ID to retrieve the result, or provide a webhook_id. Reuse the same Idempotency-Key when retrying the same request. Development and Production can both place real calls.",
         "parameters": [
           {
             "name": "Idempotency-Key",
             "in": "header",
             "required": true,
-            "description": "A unique value for this logical call. Use 1\u2013200 printable, non-space ASCII characters. Reuse it only for retries of the same request.",
+            "description": "A unique value for this collection. Use 1\u2013200 printable, non-space ASCII characters. Reuse it only for retries of the same request.",
             "schema": {
               "type": "string",
               "minLength": 1,
@@ -145,7 +145,7 @@
         },
         "responses": {
           "202": {
-            "description": "New call accepted, or an existing idempotent request returned.",
+            "description": "New collection accepted, or an existing idempotent request returned.",
             "content": {
               "application/json": {
                 "schema": {
@@ -178,17 +178,17 @@
         }
       },
       "get": {
-        "operationId": "listCalls",
+        "operationId": "listCollections",
         "tags": [
-          "Calls"
+          "Collect"
         ],
-        "summary": "List calls",
-        "description": "List calls in your workspace and API environment, newest first. Pass next_cursor as cursor to get the next page.",
+        "summary": "List collections",
+        "description": "List collections in your workspace and API environment, newest first. Pass next_cursor as cursor to get the next page.",
         "parameters": [
           {
             "name": "limit",
             "in": "query",
-            "description": "Maximum calls to return.",
+            "description": "Maximum collections to return.",
             "schema": {
               "type": "integer",
               "minimum": 1,
@@ -207,7 +207,7 @@
         ],
         "responses": {
           "200": {
-            "description": "A page of calls.",
+            "description": "A page of collections.",
             "content": {
               "application/json": {
                 "schema": {
@@ -231,13 +231,13 @@
         }
       }
     },
-    "/v1/calls/{id}": {
+    "/v1/collect/{id}": {
       "parameters": [
         {
           "name": "id",
           "in": "path",
           "required": true,
-          "description": "The call ID returned when the call was accepted.",
+          "description": "The collection ID returned when the request was accepted. IDs use the call_ prefix.",
           "schema": {
             "type": "string",
             "pattern": "^call_[a-z0-9-]+$"
@@ -246,15 +246,15 @@
         }
       ],
       "get": {
-        "operationId": "getCall",
+        "operationId": "getCollection",
         "tags": [
-          "Calls"
+          "Collect"
         ],
-        "summary": "Get a call",
-        "description": "Get the latest call state and results. Keep polling until status is completed, incomplete, failed, or canceled. Read completed answers from data and incomplete answers from partial_data.",
+        "summary": "Get a collection",
+        "description": "Get the latest collection status and results. Keep polling until status is completed, incomplete, failed, or canceled. Read completed answers from data and incomplete answers from partial_data.",
         "responses": {
           "200": {
-            "description": "The current call and its published results.",
+            "description": "The current collection and its published results.",
             "content": {
               "application/json": {
                 "schema": {
@@ -349,13 +349,13 @@
         }
       }
     },
-    "/v1/calls/{id}/cancel": {
+    "/v1/collect/{id}/cancel": {
       "parameters": [
         {
           "name": "id",
           "in": "path",
           "required": true,
-          "description": "The call ID returned when the call was accepted.",
+          "description": "The collection ID returned when the request was accepted. IDs use the call_ prefix.",
           "schema": {
             "type": "string",
             "pattern": "^call_[a-z0-9-]+$"
@@ -364,15 +364,15 @@
         }
       ],
       "post": {
-        "operationId": "cancelCall",
+        "operationId": "cancelCollection",
         "tags": [
-          "Calls"
+          "Collect"
         ],
-        "summary": "Cancel a call",
-        "description": "Request cancellation of an open call, then poll for its final status. No request body is needed. Repeated requests and requests for already closed calls return the current state.",
+        "summary": "Cancel a collection",
+        "description": "Request cancellation of an open collection, then poll for its final status. No request body is needed. Repeated requests and requests for already closed collections return the current state.",
         "responses": {
           "202": {
-            "description": "Cancellation recorded, or the current state of an already closed/cancel-requested call.",
+            "description": "Cancellation recorded, or the current state of an already closed or cancel-requested collection.",
             "content": {
               "application/json": {
                 "schema": {
@@ -396,13 +396,13 @@
         }
       }
     },
-    "/v1/calls/{id}/recording": {
+    "/v1/collect/{id}/recording": {
       "parameters": [
         {
           "name": "id",
           "in": "path",
           "required": true,
-          "description": "The call ID returned when the call was accepted.",
+          "description": "The collection ID returned when the request was accepted. IDs use the call_ prefix.",
           "schema": {
             "type": "string",
             "pattern": "^call_[a-z0-9-]+$"
@@ -413,7 +413,7 @@
       "get": {
         "operationId": "getRecording",
         "tags": [
-          "Calls"
+          "Collect"
         ],
         "summary": "Get a recording link",
         "description": "Recording is currently disabled on the hosted API. When enabled and ready, this endpoint returns a private playback link valid for approximately 15 minutes.",
@@ -453,7 +453,7 @@
           "Usage"
         ],
         "summary": "Get daily usage",
-        "description": "Read daily call counts and elapsed job seconds for 1\u201331 inclusive UTC days. Both dates default to today. Usage is attributed to the call\u2019s creation date and is not a billing statement.",
+        "description": "Read daily collection counts and elapsed job seconds for 1\u201331 inclusive UTC days. Both dates default to today. Usage is attributed to the collection\u2019s creation date and is not a billing statement.",
         "parameters": [
           {
             "name": "from",
@@ -974,14 +974,14 @@
           "id": {
             "type": "string",
             "example": "call_123e4567-e89b-42d3-a456-426614174000",
-            "description": "Use this ID to poll or cancel the call."
+            "description": "The collection ID, using the call_ prefix. Use it to retrieve or cancel the collection."
           },
           "status": {
             "$ref": "#/components/schemas/CallStatus"
           },
           "reused": {
             "type": "boolean",
-            "description": "True when the same idempotency key and normalized request already existed. No new call is created.",
+            "description": "True when the same idempotency key and normalized request already existed. No new collection is created.",
             "example": false
           },
           "environment": {
@@ -1179,7 +1179,8 @@
         "properties": {
           "id": {
             "type": "string",
-            "example": "call_123e4567-e89b-42d3-a456-426614174000"
+            "example": "call_123e4567-e89b-42d3-a456-426614174000",
+            "description": "The collection ID, using the call_ prefix."
           },
           "environment": {
             "$ref": "#/components/schemas/Environment"
@@ -1248,7 +1249,7 @@
             "items": {
               "type": "string"
             },
-            "description": "Validation messages for unavailable answers, including the field path. Empty for completed and canceled calls."
+            "description": "Validation messages for unavailable answers, including the field path. Empty for completed and canceled collections."
           },
           "error": {
             "type": "object",
@@ -1265,7 +1266,7 @@
               "code",
               "message"
             ],
-            "description": "Call-level failure details. This is separate from an HTTP error response."
+            "description": "Collection failure details. This is separate from an HTTP error response."
           },
           "duration_seconds": {
             "type": "number",
@@ -1339,7 +1340,7 @@
           "navigation_cache_source_call_id",
           "request"
         ],
-        "description": "A call and its published results. List responses return this shape. Detail responses also include navigation_routes."
+        "description": "A collection and its published results. List responses return this shape. Detail responses also include navigation_routes."
       },
       "CallDetail": {
         "allOf": [
@@ -1383,7 +1384,7 @@
             }
           }
         ],
-        "description": "Current call state. Poll the call to confirm it reaches a terminal status."
+        "description": "Current collection state. Retrieve the collection to confirm it reaches a terminal status."
       },
       "CallList": {
         "type": "object",
@@ -1434,7 +1435,7 @@
           "requested": {
             "type": "integer",
             "minimum": 0,
-            "description": "Accepted calls, counted once. Idempotent replays do not increment this count."
+            "description": "Accepted collections, counted once. Idempotent replays do not increment this count."
           },
           "completed": {
             "type": "integer",
@@ -1455,7 +1456,7 @@
           "human_assisted": {
             "type": "integer",
             "minimum": 0,
-            "description": "Finalized calls that had live human assistance."
+            "description": "Finalized collections that had live human assistance."
           },
           "elapsed_job_seconds": {
             "type": "number",
@@ -1557,7 +1558,7 @@
         }
       },
       "NotFound": {
-        "description": "No matching call in this key\u2019s workspace and environment, or the endpoint does not exist.",
+        "description": "No matching collection in this key\u2019s workspace and environment, or the endpoint does not exist.",
         "content": {
           "application/json": {
             "schema": {

@@ -1,13 +1,13 @@
 ---
-title: "Create a call"
-openapi: "api-reference/openapi.json POST /v1/calls"
+title: "Create a collection"
+openapi: "api-reference/openapi.json POST /v1/collect"
 ---
 
 Use the [quickstart](/quickstart) to set your API key and idempotency key.
 
 <RequestExample>
 ```bash cURL
-curl --fail-with-body https://api.thred.dev/v1/calls \
+curl --fail-with-body https://api.thred.dev/v1/collect \
   --request POST \
   --header "Authorization: Bearer $THRED_API_KEY" \
   --header "Content-Type: application/json" \

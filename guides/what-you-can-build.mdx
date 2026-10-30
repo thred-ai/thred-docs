@@ -3,9 +3,9 @@ title: "What you can build"
 description: "Turn questions that require a phone call into structured answers."
 ---
 
-Give Thred a phone number, a question to answer, and the shape of the result you need. Your application gets structured JSON after the call finishes.
+Use Collect when you already have a source's phone number. Give Thred instructions and the shape of the result you need. Your application gets structured JSON after Thred collects the answers.
 
-## Useful calls to automate
+## Information you can collect
 
 | Use case | What to ask |
 | --- | --- |
@@ -16,7 +16,7 @@ Give Thred a phone number, a question to answer, and the shape of the result you
 
 ## Example: check inventory
 
-Send this body to [Create a call](/api-reference/create-call), replacing `to` with the number you want to call:
+Send this body to [Create a collection](/api-reference/create-collection) at `POST /v1/collect`, replacing `to` with the number you want to call:
 
 ```json
 {
@@ -40,13 +40,13 @@ Send this body to [Create a call](/api-reference/create-call), replacing `to` wi
 }
 ```
 
-Thred returns a call ID immediately. [Retrieve the call](/api-reference/get-call) to check its status. Once `status` is `completed`, `data` contains the answers in your requested shape. If the result is `incomplete`, check `partial_data` for the answers it collected.
+Thred returns the collection's ID immediately. [Retrieve the collection](/api-reference/get-collection) to check its status. Once `status` is `completed`, `data` contains the answers in your requested shape. If the result is `incomplete`, check `partial_data` for the answers it collected.
 
 ## Shape the answers
 
 Use strings, numbers, integers, booleans, objects, and arrays in `output_schema`. Fields can also allow `null`, as the price does above. Give fields clear descriptions and list the answers you need under `required`.
 
-The root must be an object. Every object needs `properties` and `additionalProperties: false`; arrays need an `items` schema. Thred supports a small JSON Schema subset. The [API reference](/api-reference/create-call) lists the supported fields.
+The root must be an object. Every object needs `properties` and `additionalProperties: false`; arrays need an `items` schema. Thred supports a small JSON Schema subset. The [API reference](/api-reference/create-collection) lists the supported fields.
 
 ## Add context and routing
 

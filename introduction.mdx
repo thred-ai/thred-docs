@@ -1,36 +1,38 @@
 ---
 title: "Thred API"
-description: "Make a phone call. Get structured JSON back."
+description: "The data API for the phone."
 icon: "phone"
 ---
 
-Thred calls a phone number, asks for the information you need, and returns the answers as JSON. Check business hours, ask about availability, or collect information that lives on the other end of a phone call.
+Thred collects information over the phone and returns structured JSON.
+
+Use the **Collect API** when you know who to ask. Provide a phone number, instructions, and an output schema. Thred makes the call and gets the answers: business hours, inventory, availability, and more.
 
 ## How it works
 
-1. **Tell Thred what to ask.** Send a phone number and instructions.
+1. **Choose the source.** Send the phone number you want Thred to call and what you want to find out.
 2. **Choose your output.** Define the JSON fields you want back.
-3. **Get the answers.** Save the call ID and retrieve the result when it is ready.
+3. **Get the answers.** Save the collection ID and retrieve the result when it is ready.
 
 Thred handles the conversation and phone menus, and can request human assistance when needed.
 
 <CardGroup cols={2}>
-  <Card title="Make your first call" icon="bolt" href="/quickstart">
+  <Card title="Collect your first answers" icon="bolt" href="/quickstart">
     Go from an API key to your first result with one simple example.
   </Card>
   <Card title="What you can build" icon="phone" href="/guides/what-you-can-build">
-    Explore use cases and the options available for each call.
+    Explore use cases and the options available for each collection.
   </Card>
 </CardGroup>
 
-## API at a glance
+## Collect API at a glance
 
 | You want to… | Endpoint |
 | --- | --- |
-| Start a call | [POST /v1/calls](/api-reference/create-call) |
-| Read its status and result | [GET /v1/calls/&#123;id&#125;](/api-reference/get-call) |
-| List your calls | [GET /v1/calls](/api-reference/list-calls) |
-| Stop a call | [POST /v1/calls/&#123;id&#125;/cancel](/api-reference/cancel-call) |
+| Start a collection | [POST /v1/collect](/api-reference/create-collection) |
+| Read its status and result | [GET /v1/collect/&#123;id&#125;](/api-reference/get-collection) |
+| List your collections | [GET /v1/collect](/api-reference/list-collections) |
+| Cancel a collection | [POST /v1/collect/&#123;id&#125;/cancel](/api-reference/cancel-collection) |
 | Check your usage | [GET /v1/usage](/api-reference/get-usage) |
 
 The base URL is `https://api.thred.dev`. Use a bearer API key from the [dashboard](https://dashboard.thred.ai) to authenticate.

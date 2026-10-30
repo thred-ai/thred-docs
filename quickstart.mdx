@@ -18,18 +18,18 @@ Your key selects Development or Production. Both use `https://api.thred.dev`.
 Before calling, check **Settings → Calling** and **Settings → Phone numbers** to confirm calling is enabled and an enabled default caller number is configured. Development calls also dial real phone numbers.
 </Note>
 
-## 2. Make a call
+## 2. Start a collection
 
 Replace `to` with the phone number you want to call, including its country code. This example asks whether a business is open and when it closes.
 
-Generate an idempotency key once for this call. Reuse it if you retry the same request; use a new key for a new call.
+Generate an idempotency key once for this collection. Reuse it if you retry the same request; use a new key for a new collection.
 
 ```bash
 export THRED_REQUEST_ID="$(uuidgen)"
 ```
 
 ```bash
-curl --fail-with-body https://api.thred.dev/v1/calls \
+curl --fail-with-body https://api.thred.dev/v1/collect \
   --request POST \
   --header "Authorization: Bearer $THRED_API_KEY" \
   --header "Content-Type: application/json" \
@@ -49,7 +49,7 @@ curl --fail-with-body https://api.thred.dev/v1/calls \
   }'
 ```
 
-Thred accepts the request and returns `202 Accepted` with an ID:
+Thred accepts the request and returns `202 Accepted` with the collection's ID. IDs use the `call_` prefix:
 
 ```json
 {
@@ -62,11 +62,11 @@ Thred accepts the request and returns `202 Accepted` with an ID:
 
 ## 3. Get the answer
 
-Use the returned ID to check the call:
+Use the returned ID to check the collection:
 
 ```bash
 curl --fail-with-body \
-  https://api.thred.dev/v1/calls/call_12345678-1234-1234-1234-123456789abc \
+  https://api.thred.dev/v1/collect/call_12345678-1234-1234-1234-123456789abc \
   --header "Authorization: Bearer $THRED_API_KEY"
 ```
 
@@ -86,6 +86,6 @@ A completed response includes your answers in `data`:
 }
 ```
 
-If the call is `incomplete`, use the answers in `partial_data` and check `missing_fields`. A failed or canceled call may have no result.
+If the collection is `incomplete`, use the answers in `partial_data` and check `missing_fields`. A failed or canceled collection may have no result.
 
-That's the basic flow. Change the instructions and schema to [build your own use case](/guides/what-you-can-build), or see [Create a call](/api-reference/create-call) for all available fields.
+That's the basic flow. Change the instructions and schema to [build your own use case](/guides/what-you-can-build), or see [Create a collection](/api-reference/create-collection) for all available fields.

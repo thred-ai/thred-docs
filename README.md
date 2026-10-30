@@ -1,32 +1,32 @@
-# Mintlify Starter Kit
+# Thred API documentation
 
-Click on `Use this template` to copy the Mintlify starter kit. The starter kit contains examples including
+Mintlify documentation for the phone-call API at `https://api.thred.dev`.
 
-- Guide pages
-- Navigation
-- Customizations
-- API Reference pages
-- Use of popular components
+## Local preview
 
-### Development
+With the [Mintlify CLI](https://www.mintlify.com/docs/cli/install) installed, run `mint dev` from this directory.
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mintlify) to preview the documentation changes locally. To install, use the following command
+## Content
 
+- `introduction.mdx` and `quickstart.mdx`: overview and one end-to-end example.
+- `guides/what-you-can-build.mdx`: use cases and available options.
+- `api-reference/openapi.json`: the API contract.
+- `api-reference/*.mdx`: endpoint pages using [Mintlify's OpenAPI integration](https://www.mintlify.com/docs/api-playground/openapi-setup).
+- `docs.json`: navigation and Thred's existing branding.
+
+## Static validation
+
+```bash
+mint openapi-check api-reference/openapi.json
+mint validate
+mint broken-links
+git diff --check
 ```
-npm i -g mintlify
-```
 
-Run the following command at the root of your documentation (where mint.json is)
+Do not run tests or place API calls unless requested. Keep changes local unless publishing is requested.
 
-```
-mintlify dev
-```
+## Updating the contract
 
-### Publishing Changes
+Check the sibling `thred-data-backend` repository: `src/contracts.ts`, `src/index.ts`, `convex/http.ts`, `convex/calls.ts`, `convex/lib/callView.ts`, `convex/usage.ts`, and `convex/recordings.ts`.
 
-Install our Github App to auto propagate changes from your repo to your deployment. Changes will be deployed to production automatically after pushing to the default branch. Find the link to install on your dashboard. 
-
-#### Troubleshooting
-
-- Mintlify dev isn't running - Run `mintlify install` it'll re-install dependencies.
-- Page loads as a 404 - Make sure you are running in a folder with `mint.json`
+Check `../thred-phone-data/deployment/STATUS.md` before advertising local-only work. At this revision, recording and monetary billing are disabled; the local forced-review parameter is not advertised. Use only fictional data in examples.

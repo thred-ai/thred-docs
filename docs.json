@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "linden",
-  "name": "Thred Docs",
+  "name": "Thred API",
   "colors": {
     "primary": "#07b3f7",
     "light": "#07b3f7",
@@ -10,34 +10,24 @@
   "navigation": {
     "groups": [
       {
-        "group": "Introduction",
+        "group": "Get started",
         "pages": [
-          "introduction"
+          "introduction",
+          "quickstart",
+          "guides/what-you-can-build"
         ]
       },
       {
-        "group": "Track AI Search Signals",
+        "group": "API reference",
         "pages": [
-          "script-tracking/ai-search-signals",
-          "script-tracking/form-tracking",
-          "script-tracking/calcom"
-        ]
-      },
-      {
-        "group": "Conversations API",
-        "pages": [
-          "getting-started/get-enriched-chat-from-customer",
-          "getting-started/fetch-leads",
-          "getting-started/fetch-by-company",
-          "getting-started/fetch-recent-conversations"
-        ]
-      },
-      {
-        "group": "MCP Server",
-        "pages": [
-          "mcp/overview",
-          "mcp/setup",
-          "mcp/tools-reference"
+          "api-reference/create-call",
+          "api-reference/get-call",
+          "api-reference/list-calls",
+          "api-reference/cancel-call",
+          "api-reference/get-usage",
+          "api-reference/authentication",
+          "api-reference/health",
+          "api-reference/get-recording"
         ]
       }
     ]
@@ -47,17 +37,37 @@
     "light": "/images/2.png",
     "dark": "/images/3.png"
   },
-  "fonts": {
-    "heading": {
-      "source": "https://fonts.googleapis.com/css2?family=Sriracha&display=swap",
-      "family": "Sriracha",
-      "weight": 400,
-      "format": "woff"
-    }
-  },
   "background": {
     "color": {
       "dark": "#1A1A1A"
+    }
+  },
+  "description": "Make phone calls with an API and get structured JSON back.",
+  "navbar": {
+    "links": [
+      {
+        "label": "Website",
+        "href": "https://thred.ai"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://dashboard.thred.ai"
+    }
+  },
+  "api": {
+    "openapi": "api-reference/openapi.json",
+    "playground": {
+      "display": "simple"
+    },
+    "examples": {
+      "languages": [
+        "curl",
+        "javascript",
+        "python"
+      ],
+      "defaults": "required"
     }
   }
 }

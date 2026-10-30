@@ -1,53 +1,36 @@
 ---
-title: "Introduction"
-description: "Thred helps GTM teams surface buyer intent from AI search conversations across ChatGPT, Gemini, Claude, and Perplexity."
-icon: "book-open-cover"
-og:image: "https://firebasestorage.googleapis.com/v0/b/thred-ai.appspot.com/o/Marketing%2Fdocs.png?alt=media"
+title: "Thred API"
+description: "Make a phone call. Get structured JSON back."
+icon: "phone"
 ---
 
-These docs outline how to install Thred tracking, capture AI-origin conversions, and access conversation data through API or MCP.
+Thred calls a phone number, asks for the information you need, and returns the answers as JSON. Check business hours, ask about availability, or collect information that lives on the other end of a phone call.
 
-## Website Tracking
+## How it works
+
+1. **Tell Thred what to ask.** Send a phone number and instructions.
+2. **Choose your output.** Define the JSON fields you want back.
+3. **Get the answers.** Save the call ID and retrieve the result when it is ready.
+
+Thred handles the conversation and phone menus, and can request human assistance when needed.
 
 <CardGroup cols={2}>
-  <Card title="Website Script" icon="signal-stream" href="/script-tracking/ai-search-signals">
-    Install the script that captures AI-origin buyer activity.
+  <Card title="Make your first call" icon="bolt" href="/quickstart">
+    Go from an API key to your first result with one simple example.
   </Card>
-  <Card title="Custom Form Tracking" icon="rectangle-list" href="/script-tracking/form-tracking">
-    Map your site form fields for conversion attribution.
-  </Card>
-  <Card title="Cal.com Form Tracking" icon="calendar" href="/script-tracking/calcom">
-    Configure Cal.com bookings as attributable conversion events.
+  <Card title="What you can build" icon="phone" href="/guides/what-you-can-build">
+    Explore use cases and the options available for each call.
   </Card>
 </CardGroup>
 
-## Conversations API
+## API at a glance
 
-<CardGroup cols={2}>
-  <Card title="Get Conversation by Email" icon="envelope" href="/getting-started/get-enriched-chat-from-customer">
-    Look up one customer record by email.
-  </Card>
-  <Card title="Get Conversation by Customer ID" icon="rectangle-code" href="/getting-started/fetch-leads">
-    Query one customer record by ID.
-  </Card>
-  <Card title="Get Conversations by Company" icon="building" href="/getting-started/fetch-by-company">
-    Return matched conversation records for a company.
-  </Card>
-  <Card title="Get Recent Conversations" icon="clock-rotate-left" href="/getting-started/fetch-recent-conversations">
-    Pull latest conversations with platform and date filters.
-  </Card>
-</CardGroup>
+| You want to… | Endpoint |
+| --- | --- |
+| Start a call | [POST /v1/calls](/api-reference/create-call) |
+| Read its status and result | [GET /v1/calls/&#123;id&#125;](/api-reference/get-call) |
+| List your calls | [GET /v1/calls](/api-reference/list-calls) |
+| Stop a call | [POST /v1/calls/&#123;id&#125;/cancel](/api-reference/cancel-call) |
+| Check your usage | [GET /v1/usage](/api-reference/get-usage) |
 
-## MCP Server
-
-<CardGroup cols={2}>
-  <Card title="Thred MCP Overview" icon="robot" href="/mcp/overview">
-    Understand MCP capabilities and available tools.
-  </Card>
-  <Card title="MCP Setup" icon="plug" href="/mcp/setup">
-    Connect Cursor, Claude Desktop, and other MCP clients.
-  </Card>
-  <Card title="MCP Tools Reference" icon="screwdriver-wrench" href="/mcp/tools-reference">
-    Review tool inputs and example payloads.
-  </Card>
-</CardGroup>
+The base URL is `https://api.thred.dev`. Use a bearer API key from the [dashboard](https://dashboard.thred.ai) to authenticate.

@@ -1,16 +1,14 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.3",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "Thred API",
+    "version": "1.0.0",
+    "description": "Turn phone calls into structured data. Send a task and output schema, then retrieve the result. Use the same base URL for Development and Production; your API key selects the environment."
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
+      "url": "https://api.thred.dev",
+      "description": "Thred API"
     }
   ],
   "security": [
@@ -18,77 +16,41 @@
       "bearerAuth": []
     }
   ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Verify the workspace and environment selected by your API key."
+    },
+    {
+      "name": "Calls",
+      "description": "Create calls and retrieve their state and results."
+    },
+    {
+      "name": "Usage",
+      "description": "Read daily operational usage."
+    },
+    {
+      "name": "Health",
+      "description": "Check public API availability."
+    }
+  ],
   "paths": {
-    "/plants": {
+    "/v1/health": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
+        "operationId": "getHealth",
+        "tags": [
+          "Health"
         ],
+        "summary": "Check API health",
+        "description": "Check whether the API service responds. No API key is needed.",
+        "security": [],
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "API service is responding.",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "description": "Creates a new plant in the store",
-        "requestBody": {
-          "description": "Plant to add to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "plant response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Plant"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/Health"
                 }
               }
             }
@@ -96,99 +58,1573 @@
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/v1/auth/me": {
+      "get": {
+        "operationId": "getIdentity",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Check your API key",
+        "description": "Check your key and see its workspace and environment.",
+        "responses": {
+          "200": {
+            "description": "Authenticated key identity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Identity"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/calls": {
+      "post": {
+        "operationId": "createCall",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Create a call",
+        "description": "Start a call and receive its ID immediately. Retrieve the call for the result, or provide a webhook_id. Reuse the same Idempotency-Key when retrying the same request. Development and Production can both place real calls.",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "ID of plant to delete",
+            "name": "Idempotency-Key",
+            "in": "header",
             "required": true,
+            "description": "A unique value for this logical call. Use 1\u2013200 printable, non-space ASCII characters. Reuse it only for retries of the same request.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[!-~]{1,200}$"
+            },
+            "example": "business-hours-001"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The task, destination, and expected result shape.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCallRequest"
+              },
+              "example": {
+                "to": "+14155550123",
+                "instructions": "Ask whether the business is open today and what time it closes.",
+                "output_schema": {
+                  "type": "object",
+                  "properties": {
+                    "is_open": {
+                      "type": "boolean"
+                    },
+                    "closes_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "is_open",
+                    "closes_at"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "New call accepted, or an existing idempotent request returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptedCall"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "413": {
+            "$ref": "#/components/responses/TooLarge"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      },
+      "get": {
+        "operationId": "listCalls",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "List calls",
+        "description": "List calls in your workspace and API environment, newest first. Pass next_cursor as cursor to get the next page.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum calls to return.",
             "schema": {
               "type": "integer",
-              "format": "int64"
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Opaque next_cursor from a previous response. Omit for the first page.",
+            "schema": {
+              "type": "string"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Plant deleted",
-            "content": {}
-          },
-          "400": {
-            "description": "unexpected error",
+          "200": {
+            "description": "A page of calls.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/CallList"
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/calls/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "The call ID returned when the call was accepted.",
+          "schema": {
+            "type": "string",
+            "pattern": "^call_[a-z0-9-]+$"
+          },
+          "example": "call_123e4567-e89b-42d3-a456-426614174000"
+        }
+      ],
+      "get": {
+        "operationId": "getCall",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Get a call",
+        "description": "Get the latest call state and results. Keep polling until status is completed, incomplete, failed, or canceled. Read completed answers from data and incomplete answers from partial_data.",
+        "responses": {
+          "200": {
+            "description": "The current call and its published results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CallDetail"
+                },
+                "example": {
+                  "id": "call_123e4567-e89b-42d3-a456-426614174000",
+                  "environment": "development",
+                  "status": "completed",
+                  "handling": "ai",
+                  "to": "+14155550123",
+                  "from": "+12025550124",
+                  "created_at": "2026-10-30T14:00:00.000Z",
+                  "updated_at": "2026-10-30T14:01:20.000Z",
+                  "started_at": "2026-10-30T14:00:02.000Z",
+                  "ended_at": "2026-10-30T14:01:12.000Z",
+                  "human_assisted": false,
+                  "outcome": "data-completed",
+                  "data": {
+                    "is_open": true,
+                    "closes_at": "5 PM"
+                  },
+                  "partial_data": null,
+                  "missing_fields": [],
+                  "error": null,
+                  "duration_seconds": 70,
+                  "usage": {
+                    "elapsed_job_seconds": 70,
+                    "billed_seconds": null,
+                    "billing_status": "unreconciled"
+                  },
+                  "recording_status": "disabled",
+                  "recording": {
+                    "status": "disabled",
+                    "duration_seconds": null,
+                    "audio_started_at": null,
+                    "error": null
+                  },
+                  "cancellation_requested": false,
+                  "screener_sequence": [
+                    {
+                      "message": "Hello, I am calling to confirm today\u2019s business hours.",
+                      "type": "intro"
+                    }
+                  ],
+                  "screener_sequence_source": "generated",
+                  "navigation_cache_source_call_id": null,
+                  "request": {
+                    "to": "+14155550123",
+                    "instructions": "Find out whether the business is open today and what time it closes.",
+                    "output_schema": {
+                      "type": "object",
+                      "properties": {
+                        "is_open": {
+                          "type": "boolean"
+                        },
+                        "closes_at": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "is_open",
+                        "closes_at"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "input": {},
+                    "max_duration_seconds": 300,
+                    "metadata": {},
+                    "record": false
+                  },
+                  "navigation_routes": []
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/calls/{id}/cancel": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "The call ID returned when the call was accepted.",
+          "schema": {
+            "type": "string",
+            "pattern": "^call_[a-z0-9-]+$"
+          },
+          "example": "call_123e4567-e89b-42d3-a456-426614174000"
+        }
+      ],
+      "post": {
+        "operationId": "cancelCall",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Cancel a call",
+        "description": "Request cancellation of an open call, then poll for its final status. No request body is needed. Repeated requests and requests for already closed calls return the current state.",
+        "responses": {
+          "202": {
+            "description": "Cancellation recorded, or the current state of an already closed/cancel-requested call.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cancellation"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/calls/{id}/recording": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "description": "The call ID returned when the call was accepted.",
+          "schema": {
+            "type": "string",
+            "pattern": "^call_[a-z0-9-]+$"
+          },
+          "example": "call_123e4567-e89b-42d3-a456-426614174000"
+        }
+      ],
+      "get": {
+        "operationId": "getRecording",
+        "tags": [
+          "Calls"
+        ],
+        "summary": "Get a recording link",
+        "description": "Recording is currently disabled on the hosted API. When enabled and ready, this endpoint returns a private playback link valid for approximately 15 minutes.",
+        "responses": {
+          "200": {
+            "description": "Temporary playback link.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordingLink"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/RecordingUnavailable"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
+          }
+        }
+      }
+    },
+    "/v1/usage": {
+      "get": {
+        "operationId": "getUsage",
+        "tags": [
+          "Usage"
+        ],
+        "summary": "Get daily usage",
+        "description": "Read daily call counts and elapsed job seconds for 1\u201331 inclusive UTC days. Both dates default to today. Usage is attributed to the call\u2019s creation date and is not a billing statement.",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "First UTC date, inclusive. Defaults to today.",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "example": "2026-10-30"
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Last UTC date, inclusive. Must be on or after from and no more than 30 days later. Defaults to today.",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "example": "2026-10-30"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daily operational usage for the selected API environment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "503": {
+            "$ref": "#/components/responses/Unavailable"
           }
         }
       }
     }
   },
   "components": {
-    "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
-          },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
-          },
-          {
-            "required": [
-              "id"
-            ],
-            "type": "object",
-            "properties": {
-              "id": {
-                "description": "Identification number of the plant",
-                "type": "integer",
-                "format": "int64"
-              }
-            }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
-        "scheme": "bearer"
+        "scheme": "bearer",
+        "bearerFormat": "Thred API key",
+        "description": "Send Authorization: Bearer <THRED_API_KEY>. Development keys begin thr_dev_; Production keys begin thr_prod_. Each key is scoped to a workspace and environment. Keep secrets on your server."
+      }
+    },
+    "schemas": {
+      "Environment": {
+        "type": "string",
+        "enum": [
+          "development",
+          "production"
+        ],
+        "description": "The API key selects the workspace environment. Development and Production are isolated, but either can place real calls when enabled."
+      },
+      "CallStatus": {
+        "type": "string",
+        "enum": [
+          "queued",
+          "dialing",
+          "in_progress",
+          "processing",
+          "awaiting_review",
+          "completed",
+          "incomplete",
+          "failed",
+          "canceled"
+        ],
+        "description": "Final: completed, incomplete, failed, canceled. Continue polling for all other statuses."
+      },
+      "CallHandling": {
+        "type": "string",
+        "enum": [
+          "ai",
+          "awaiting_operator",
+          "operator"
+        ],
+        "description": "Who is handling the call: AI, waiting for an internal operator, or an internal operator."
+      },
+      "ErrorDetail": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error explanation."
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "thred-data-backend"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          },
+          "environment": {
+            "type": "string",
+            "example": "production",
+            "description": "API deployment environment. This is not the environment selected by an API key."
+          }
+        },
+        "required": [
+          "service",
+          "status",
+          "environment"
+        ]
+      },
+      "Identity": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {
+            "type": "string",
+            "description": "Workspace associated with the API key."
+          },
+          "environment": {
+            "$ref": "#/components/schemas/Environment"
+          },
+          "key_id": {
+            "type": "string",
+            "description": "Identifier of the authenticated key; never the key secret."
+          }
+        },
+        "required": [
+          "workspace_id",
+          "environment",
+          "key_id"
+        ]
+      },
+      "Navigation": {
+        "type": "object",
+        "properties": {
+          "contact_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Person to ask for."
+          },
+          "department": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Department to reach."
+          },
+          "extension": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 16,
+            "pattern": "^[0-9]+$",
+            "description": "Extension hint, used when an appropriate extension-entry prompt is heard."
+          },
+          "language": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "pattern": "^[a-zA-Z]{2,3}(?:-[a-zA-Z0-9]{2,8}){0,3}$",
+            "example": "en",
+            "description": "Language tag, such as en or fr-CA."
+          }
+        },
+        "description": "Optional routing hints. IVR navigation is automatic. Custom routes, actions, and navigation policy overrides are not accepted.",
+        "additionalProperties": false
+      },
+      "ScreenerMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "description": "Approved spoken copy; must contain non-whitespace text."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "intro",
+              "detail"
+            ],
+            "description": "The first message must be intro; all later messages must be detail."
+          }
+        },
+        "required": [
+          "message",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "OutputSchemaNode": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "description": "One supported type, or an array containing one supported non-null type and null. An object schema must include properties and additionalProperties: false; an array schema must include items.",
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "object",
+                  "array",
+                  "string",
+                  "number",
+                  "integer",
+                  "boolean",
+                  "null"
+                ]
+              },
+              {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 2,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "object",
+                    "array",
+                    "string",
+                    "number",
+                    "integer",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            ]
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "description": "Explain what the answer should contain."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "properties": {
+            "type": "object",
+            "description": "Object fields. Names must contain 1\u2013120 characters and cannot be __proto__, prototype, or constructor.",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "A nested schema with the same supported fields. Every node needs type; objects need properties and additionalProperties: false; arrays need items."
+            }
+          },
+          "required": {
+            "type": "array",
+            "description": "Unique names declared in properties. Required answers that cannot be obtained prevent a completed result.",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "Required and always false for every object schema."
+          },
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The schema for each array item, using the same supported fields."
+          },
+          "enum": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "nullable": true
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "description": "Primitive string, number, boolean, or null values. Each value must satisfy the declared type and bounds."
+          },
+          "minItems": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "maxItems": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "minLength": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "maxLength": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          },
+          "minimum": {
+            "type": "number"
+          },
+          "maximum": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "description": "Supported JSON Schema fields. Maximum 128 nodes and 8 nesting levels below the root. Keywords must match their type; minimum bounds cannot exceed maximum bounds.",
+        "additionalProperties": false
+      },
+      "OutputSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "object"
+            ],
+            "description": "The result must be a JSON object."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "description": "Explain what the answer should contain."
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "properties": {
+            "type": "object",
+            "description": "Object fields. Names must contain 1\u2013120 characters and cannot be __proto__, prototype, or constructor.",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/OutputSchemaNode"
+            }
+          },
+          "required": {
+            "type": "array",
+            "description": "Unique names declared in properties. Required answers that cannot be obtained prevent a completed result.",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": {
+            "type": "boolean",
+            "enum": [
+              false
+            ],
+            "description": "Required and always false for every object schema."
+          }
+        },
+        "required": [
+          "type",
+          "properties",
+          "additionalProperties"
+        ],
+        "description": "The JSON object you want back. Define its properties and required fields, and set additionalProperties to false.",
+        "additionalProperties": false,
+        "example": {
+          "type": "object",
+          "properties": {
+            "is_open": {
+              "type": "boolean"
+            },
+            "closes_at": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "is_open",
+            "closes_at"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "CreateCallRequest": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{6,14}$",
+            "example": "+14155550123",
+            "description": "Destination phone number in E.164 format."
+          },
+          "instructions": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 8000,
+            "description": "What you want to find out. Thred manages conversation, navigation, and assistance. Must contain non-whitespace text."
+          },
+          "output_schema": {
+            "$ref": "#/components/schemas/OutputSchema"
+          },
+          "input": {
+            "type": "object",
+            "additionalProperties": true,
+            "default": {},
+            "description": "Context for the call, up to 16,000 bytes of JSON. Maximum depth: 32; maximum values: 8,192."
+          },
+          "max_duration_seconds": {
+            "type": "integer",
+            "default": 300,
+            "minimum": 30,
+            "maximum": 1800,
+            "description": "Maximum job duration. Your workspace and environment may have a lower limit."
+          },
+          "caller_number_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Enabled caller number ID belonging to the same workspace and environment. Omit to use the environment default."
+          },
+          "webhook_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Enabled webhook endpoint ID from your dashboard, in the same workspace and environment. Omit to poll for results."
+          },
+          "navigation": {
+            "$ref": "#/components/schemas/Navigation"
+          },
+          "screener_sequence": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": {
+              "$ref": "#/components/schemas/ScreenerMessage"
+            },
+            "description": "An intro followed by optional detail messages for screeners. If omitted, Thred prepares a sequence from the task and input before dialing."
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "default": {},
+            "description": "Your tracking fields, up to 4,000 bytes of JSON. Maximum depth: 32; maximum values: 8,192."
+          },
+          "record": {
+            "type": "boolean",
+            "default": false,
+            "description": "Recording is currently disabled. Leave false or omit; true returns 503."
+          }
+        },
+        "required": [
+          "to",
+          "instructions",
+          "output_schema"
+        ],
+        "description": "Send UTF-8 JSON, up to 64 KiB. Unknown fields are rejected.",
+        "additionalProperties": false
+      },
+      "CallRequestSnapshot": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CreateCallRequest"
+          },
+          {
+            "type": "object",
+            "required": [
+              "input",
+              "max_duration_seconds",
+              "metadata",
+              "record"
+            ]
+          }
+        ],
+        "description": "The accepted request with defaults applied and text normalized. Client metadata remains available here."
+      },
+      "AcceptedCall": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "call_123e4567-e89b-42d3-a456-426614174000",
+            "description": "Use this ID to poll or cancel the call."
+          },
+          "status": {
+            "$ref": "#/components/schemas/CallStatus"
+          },
+          "reused": {
+            "type": "boolean",
+            "description": "True when the same idempotency key and normalized request already existed. No new call is created.",
+            "example": false
+          },
+          "environment": {
+            "$ref": "#/components/schemas/Environment"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "reused",
+          "environment"
+        ]
+      },
+      "RecordingStatus": {
+        "type": "string",
+        "enum": [
+          "disabled",
+          "pending",
+          "starting",
+          "recording",
+          "processing",
+          "ready",
+          "failed"
+        ],
+        "description": "Recording progresses independently of the call result. Hosted recording is currently disabled."
+      },
+      "Recording": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/RecordingStatus"
+          },
+          "duration_seconds": {
+            "type": "number",
+            "nullable": true,
+            "description": "Recorded audio duration, when available."
+          },
+          "audio_started_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "Start of the recording audio clock, when available."
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "description": "Recording failure details, if any."
+          }
+        },
+        "required": [
+          "status",
+          "duration_seconds",
+          "audio_started_at",
+          "error"
+        ]
+      },
+      "CallUsage": {
+        "type": "object",
+        "properties": {
+          "elapsed_job_seconds": {
+            "type": "number",
+            "nullable": true,
+            "description": "Elapsed job duration, including setup and waiting. Not a billable duration."
+          },
+          "billed_seconds": {
+            "type": "number",
+            "nullable": true,
+            "enum": [
+              null
+            ],
+            "description": "Always null until provider billing reconciliation is available."
+          },
+          "billing_status": {
+            "type": "string",
+            "enum": [
+              "unreconciled"
+            ]
+          }
+        },
+        "required": [
+          "elapsed_job_seconds",
+          "billed_seconds",
+          "billing_status"
+        ]
+      },
+      "NavigationAction": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "press-digits"
+                ]
+              },
+              "digits": {
+                "type": "string",
+                "description": "Digits sent to the phone menu."
+              }
+            },
+            "required": [
+              "kind",
+              "digits"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "speak"
+                ]
+              },
+              "text": {
+                "type": "string",
+                "description": "Spoken menu response."
+              }
+            },
+            "required": [
+              "kind",
+              "text"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "NavigationStep": {
+        "type": "object",
+        "properties": {
+          "menu": {
+            "type": "string",
+            "description": "Observed menu text."
+          },
+          "action": {
+            "$ref": "#/components/schemas/NavigationAction"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "authorized",
+              "executing",
+              "sent",
+              "failed",
+              "uncertain",
+              "canceled"
+            ]
+          }
+        },
+        "required": [
+          "menu",
+          "action",
+          "status"
+        ]
+      },
+      "NavigationRoute": {
+        "type": "object",
+        "properties": {
+          "navigation_id": {
+            "type": "string",
+            "description": "Navigation episode identifier."
+          },
+          "status": {
+            "type": "string",
+            "description": "Navigation episode status."
+          },
+          "result": {
+            "type": "string",
+            "nullable": true,
+            "description": "Navigation outcome, when known."
+          },
+          "reusable": {
+            "type": "boolean",
+            "description": "Whether successful steps are eligible for automatic reuse on a matching future call."
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NavigationStep"
+            }
+          }
+        },
+        "required": [
+          "navigation_id",
+          "status",
+          "result",
+          "reusable",
+          "steps"
+        ]
+      },
+      "Call": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "call_123e4567-e89b-42d3-a456-426614174000"
+          },
+          "environment": {
+            "$ref": "#/components/schemas/Environment"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CallStatus"
+          },
+          "handling": {
+            "$ref": "#/components/schemas/CallHandling"
+          },
+          "to": {
+            "type": "string",
+            "example": "+14155550123",
+            "description": "Destination in E.164 format."
+          },
+          "from": {
+            "type": "string",
+            "example": "+12025550124",
+            "description": "Outbound caller number in E.164 format."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC creation time."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC time of the latest update."
+          },
+          "started_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "UTC job start time, or null before startup."
+          },
+          "ended_at": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "UTC job end time, or null until closure. Results may still be processing afterward."
+          },
+          "human_assisted": {
+            "type": "boolean",
+            "description": "Whether an internal operator assisted the live call. Assisted results require approval before publication."
+          },
+          "outcome": {
+            "type": "string",
+            "nullable": true,
+            "description": "Call closure reason, when known. Use status to determine whether results are final."
+          },
+          "data": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "description": "Complete answers matching output_schema, or null before publication / when no complete result exists."
+          },
+          "partial_data": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true,
+            "description": "Available answers when a complete result could not be obtained. Missing required fields may be omitted, but remaining schema constraints still apply."
+          },
+          "missing_fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Validation messages for unavailable answers, including the field path. Empty for completed and canceled calls."
+          },
+          "error": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "description": "Call-level failure details. This is separate from an HTTP error response."
+          },
+          "duration_seconds": {
+            "type": "number",
+            "nullable": true,
+            "description": "Elapsed job duration; not provider billable talk time."
+          },
+          "usage": {
+            "$ref": "#/components/schemas/CallUsage"
+          },
+          "recording_status": {
+            "$ref": "#/components/schemas/RecordingStatus"
+          },
+          "recording": {
+            "$ref": "#/components/schemas/Recording"
+          },
+          "cancellation_requested": {
+            "type": "boolean",
+            "description": "True once a cancellation request is recorded; does not by itself mean the call has ended."
+          },
+          "screener_sequence": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/ScreenerMessage"
+            },
+            "description": "Prepared or supplied screener messages, or null while preparation is pending."
+          },
+          "screener_sequence_source": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "provided",
+              "generated",
+              null
+            ],
+            "description": "Whether screener messages were supplied or generated."
+          },
+          "navigation_cache_source_call_id": {
+            "type": "string",
+            "nullable": true,
+            "description": "Prior call whose eligible navigation steps were loaded, or null."
+          },
+          "request": {
+            "$ref": "#/components/schemas/CallRequestSnapshot"
+          }
+        },
+        "required": [
+          "id",
+          "environment",
+          "status",
+          "handling",
+          "to",
+          "from",
+          "created_at",
+          "updated_at",
+          "started_at",
+          "ended_at",
+          "human_assisted",
+          "outcome",
+          "data",
+          "partial_data",
+          "missing_fields",
+          "error",
+          "duration_seconds",
+          "usage",
+          "recording_status",
+          "recording",
+          "cancellation_requested",
+          "screener_sequence",
+          "screener_sequence_source",
+          "navigation_cache_source_call_id",
+          "request"
+        ],
+        "description": "A call and its published results. List responses return this shape. Detail responses also include navigation_routes."
+      },
+      "CallDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Call"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "navigation_routes": {
+                "type": "array",
+                "maxItems": 16,
+                "items": {
+                  "$ref": "#/components/schemas/NavigationRoute"
+                },
+                "description": "Observed IVR navigation routes for this call."
+              }
+            },
+            "required": [
+              "navigation_routes"
+            ]
+          }
+        ]
+      },
+      "Cancellation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Call"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "navigation_routes": {
+                "type": "array",
+                "maxItems": 16,
+                "items": {
+                  "$ref": "#/components/schemas/NavigationRoute"
+                },
+                "description": "Included when the call is already closed, terminal, or previously marked for cancellation."
+              }
+            }
+          }
+        ],
+        "description": "Current call state. Poll the call to confirm it reaches a terminal status."
+      },
+      "CallList": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Call"
+            }
+          },
+          "next_cursor": {
+            "type": "string",
+            "nullable": true,
+            "description": "Opaque cursor for the next page. Null means there are no more results."
+          }
+        },
+        "required": [
+          "data",
+          "next_cursor"
+        ]
+      },
+      "RecordingLink": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Temporary private playback URL. Treat the URL as a secret."
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "UTC expiry time, approximately 15 minutes after issuance."
+          }
+        },
+        "required": [
+          "url",
+          "expires_at"
+        ]
+      },
+      "DailyUsage": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "format": "date"
+          },
+          "requested": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Accepted calls, counted once. Idempotent replays do not increment this count."
+          },
+          "completed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "incomplete": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "canceled": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "human_assisted": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Finalized calls that had live human assistance."
+          },
+          "elapsed_job_seconds": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Operational elapsed duration recorded on physical call closure."
+          }
+        },
+        "required": [
+          "day",
+          "requested",
+          "completed",
+          "incomplete",
+          "failed",
+          "canceled",
+          "human_assisted",
+          "elapsed_job_seconds"
+        ]
+      },
+      "Usage": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "format": "date"
+          },
+          "to": {
+            "type": "string",
+            "format": "date"
+          },
+          "environment": {
+            "$ref": "#/components/schemas/Environment"
+          },
+          "timezone": {
+            "type": "string",
+            "enum": [
+              "UTC"
+            ]
+          },
+          "attribution": {
+            "type": "string",
+            "enum": [
+              "call_created_date"
+            ]
+          },
+          "billing_status": {
+            "type": "string",
+            "enum": [
+              "unreconciled"
+            ]
+          },
+          "billed_seconds": {
+            "type": "number",
+            "nullable": true,
+            "enum": [
+              null
+            ],
+            "description": "Always null; these counters are not billing reconciliation."
+          },
+          "data": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 31,
+            "items": {
+              "$ref": "#/components/schemas/DailyUsage"
+            }
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "environment",
+          "timezone",
+          "attribution",
+          "billing_status",
+          "billed_seconds",
+          "data"
+        ]
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request, schema, destination, duration, caller number, webhook, or date range. Inspect error.code and error.message.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing, malformed, invalid, revoked, or environment-mismatched bearer API key.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "No matching call in this key\u2019s workspace and environment, or the endpoint does not exist.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "This idempotency key already belongs to a different normalized request.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "TooLarge": {
+        "description": "The UTF-8 request body exceeds 64 KiB.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "The workspace or environment concurrent-call, per-minute, or maximum-duration limit was exceeded. Codes: capacity_exceeded, rate_limited, or limit_exceeded.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unavailable": {
+        "description": "Calling or the backend is unavailable. Codes include calling_unavailable, environment_unavailable, not_configured, and backend_unavailable. For a transient creation failure, retry the same request with the same Idempotency-Key.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "InternalError": {
+        "description": "Unexpected server error. When retrying creation, reuse the original Idempotency-Key.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "RecordingUnavailable": {
+        "description": "Recording is not ready or storage identity cannot be verified. Recording is currently disabled on the hosted API.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
       }
     }
   }

@@ -18,16 +18,21 @@
         ]
       },
       {
-        "group": "API reference",
+        "group": "Collect API",
         "pages": [
-          "api-reference/create-call",
-          "api-reference/get-call",
-          "api-reference/list-calls",
-          "api-reference/cancel-call",
-          "api-reference/get-usage",
-          "api-reference/authentication",
-          "api-reference/health",
+          "api-reference/create-collection",
+          "api-reference/get-collection",
+          "api-reference/list-collections",
+          "api-reference/cancel-collection",
           "api-reference/get-recording"
+        ]
+      },
+      {
+        "group": "Account and utilities",
+        "pages": [
+          "api-reference/authentication",
+          "api-reference/get-usage",
+          "api-reference/health"
         ]
       }
     ]
@@ -42,7 +47,7 @@
       "dark": "#1A1A1A"
     }
   },
-  "description": "Make phone calls with an API and get structured JSON back.",
+  "description": "The data API for the phone. Collect structured answers from a known phone number.",
   "navbar": {
     "links": [
       {

@@ -3,7 +3,7 @@
   "info": {
     "title": "Thred API",
     "version": "1.0.0",
-    "description": "Thred is the data API for the phone. Use Collect when you know who to ask: send a phone number, instructions, and an output schema, then retrieve structured JSON. Use the same base URL for Development and Production; your API key selects the environment."
+    "description": "Thred is the data API for the phone. Use Collect when you know who to ask: send a phone number and instructions, add context values in input, and define the answers you want with a JSON Schema in output. Use the same base URL for Development and Production; your API key selects the environment."
   },
   "servers": [
     {
@@ -96,7 +96,7 @@
           "Collect"
         ],
         "summary": "Create a collection",
-        "description": "Collect answers from a known phone number. Send instructions and an output schema, then use the returned ID to retrieve the result, or provide a webhook_id. Development and Production can both place real calls.",
+        "description": "Collect answers from a known phone number. Send instructions, optional context values in input, and a JSON Schema in output. Use the returned ID to retrieve the result, or provide a webhook_id. Development and Production can both place real calls.",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -114,7 +114,7 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "The task, destination, and expected result shape.",
+          "description": "The destination, task, input context, and output JSON Schema.",
           "content": {
             "application/json": {
               "schema": {
@@ -122,8 +122,11 @@
               },
               "example": {
                 "to": "+14155550123",
-                "instructions": "Ask whether the business is open today and what time it closes.",
-                "output_schema": {
+                "instructions": "Ask whether the business is open on the date in input and what time it closes.",
+                "input": {
+                  "date": "today"
+                },
+                "output": {
                   "type": "object",
                   "properties": {
                     "is_open": {
@@ -304,8 +307,11 @@
                   "navigation_cache_source_call_id": null,
                   "request": {
                     "to": "+14155550123",
-                    "instructions": "Find out whether the business is open today and what time it closes.",
-                    "output_schema": {
+                    "instructions": "Ask whether the business is open on the date in input and what time it closes.",
+                    "input": {
+                      "date": "today"
+                    },
+                    "output": {
                       "type": "object",
                       "properties": {
                         "is_open": {
@@ -324,7 +330,6 @@
                       ],
                       "additionalProperties": false
                     },
-                    "input": {},
                     "max_duration_seconds": 300,
                     "metadata": {},
                     "record": false
@@ -857,7 +862,7 @@
           "properties",
           "additionalProperties"
         ],
-        "description": "The JSON object you want back. Define its properties and required fields, and set additionalProperties to false.",
+        "description": "The JSON Schema defining the answers returned in data. Define its properties and required fields, and set additionalProperties to false.",
         "additionalProperties": false,
         "example": {
           "type": "object",
@@ -891,14 +896,17 @@
             "maxLength": 8000,
             "description": "What you want to find out. Thred manages conversation, navigation, and assistance. Must contain non-whitespace text."
           },
-          "output_schema": {
-            "$ref": "#/components/schemas/OutputSchema"
-          },
           "input": {
             "type": "object",
             "additionalProperties": true,
             "default": {},
-            "description": "Context for the call, up to 16,000 bytes of JSON. Maximum depth: 32; maximum values: 8,192."
+            "description": "Known context values for the call, such as a date, product name, or reference number. Must be a JSON object; optional and defaults to an empty object. Up to 16,000 bytes of JSON. Maximum depth: 32; maximum values: 8,192.",
+            "example": {
+              "date": "today"
+            }
+          },
+          "output": {
+            "$ref": "#/components/schemas/OutputSchema"
           },
           "max_duration_seconds": {
             "type": "integer",
@@ -946,7 +954,7 @@
         "required": [
           "to",
           "instructions",
-          "output_schema"
+          "output"
         ],
         "description": "Send UTF-8 JSON, up to 64 KiB. Unknown fields are rejected.",
         "additionalProperties": false
@@ -1236,7 +1244,7 @@
             "type": "object",
             "nullable": true,
             "additionalProperties": true,
-            "description": "Complete answers matching output_schema, or null before publication / when no complete result exists."
+            "description": "Complete answers matching output, or null before publication / when no complete result exists."
           },
           "partial_data": {
             "type": "object",

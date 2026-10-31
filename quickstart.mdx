@@ -14,6 +14,8 @@ export THRED_API_KEY="YOUR_API_KEY"
 
 Your key selects Development or Production. Both use `https://api.thred.dev`.
 
+Choose cURL, JavaScript, or Python below. JavaScript runs on your server with Node.js: save a snippet as `example.mjs` and run `node example.mjs`. For Python, install Requests with `python -m pip install requests`. All snippets read the environment variables set on this page.
+
 <Note>
 Before calling, check **Settings → Calling** and **Settings → Phone numbers** to confirm calling is enabled and an enabled default caller number is configured. Development calls also dial real phone numbers.
 </Note>
@@ -28,7 +30,8 @@ Generate an idempotency key once for this collection. Reuse it if you retry the 
 export THRED_REQUEST_ID="$(uuidgen)"
 ```
 
-```bash
+<CodeGroup>
+```bash cURL
 curl --fail-with-body https://api.thred.dev/v1/collect \
   --request POST \
   --header "Authorization: Bearer $THRED_API_KEY" \
@@ -49,6 +52,65 @@ curl --fail-with-body https://api.thred.dev/v1/collect \
   }'
 ```
 
+```javascript JavaScript
+const response = await fetch("https://api.thred.dev/v1/collect", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.THRED_API_KEY}`,
+    "Content-Type": "application/json",
+    "Idempotency-Key": process.env.THRED_REQUEST_ID,
+  },
+  body: JSON.stringify({
+    to: "+14155550123",
+    instructions: "Ask whether the business is open today and what time it closes.",
+    output_schema: {
+      type: "object",
+      properties: {
+        is_open: { type: "boolean" },
+        closes_at: { type: "string" }
+      },
+      required: ["is_open", "closes_at"],
+      "additionalProperties": false
+    }
+  }),
+});
+
+if (!response.ok) throw new Error(await response.text());
+const collection = await response.json();
+console.log(collection.id);
+```
+
+```python Python
+import os
+import requests
+
+response = requests.post(
+    "https://api.thred.dev/v1/collect",
+    headers={
+        "Authorization": f"Bearer {os.environ['THRED_API_KEY']}",
+        "Idempotency-Key": os.environ["THRED_REQUEST_ID"],
+    },
+    json={
+        "to": "+14155550123",
+        "instructions": "Ask whether the business is open today and what time it closes.",
+        "output_schema": {
+            "type": "object",
+            "properties": {
+                "is_open": { "type": "boolean" },
+                "closes_at": { "type": "string" }
+            },
+            "required": ["is_open", "closes_at"],
+            "additionalProperties": False
+        }
+    },
+    timeout=30,
+)
+response.raise_for_status()
+collection = response.json()
+print(collection["id"])
+```
+</CodeGroup>
+
 Thred accepts the request and returns `202 Accepted` with the collection's ID. IDs use the `call_` prefix:
 
 ```json
@@ -62,13 +124,41 @@ Thred accepts the request and returns `202 Accepted` with the collection's ID. I
 
 ## 3. Get the answer
 
-Use the returned ID to check the collection:
+Replace the example ID with the ID returned by your collection:
 
-```bash
+<CodeGroup>
+```bash cURL
 curl --fail-with-body \
   https://api.thred.dev/v1/collect/call_12345678-1234-1234-1234-123456789abc \
   --header "Authorization: Bearer $THRED_API_KEY"
 ```
+
+```javascript JavaScript
+const collectionId = "call_12345678-1234-1234-1234-123456789abc";
+const response = await fetch(`https://api.thred.dev/v1/collect/${collectionId}`, {
+  headers: { Authorization: `Bearer ${process.env.THRED_API_KEY}` },
+});
+
+if (!response.ok) throw new Error(await response.text());
+const collection = await response.json();
+console.log(collection.status, collection.data);
+```
+
+```python Python
+import os
+import requests
+
+collection_id = "call_12345678-1234-1234-1234-123456789abc"
+response = requests.get(
+    f"https://api.thred.dev/v1/collect/{collection_id}",
+    headers={"Authorization": f"Bearer {os.environ['THRED_API_KEY']}"},
+    timeout=30,
+)
+response.raise_for_status()
+collection = response.json()
+print(collection["status"], collection["data"])
+```
+</CodeGroup>
 
 Check every few seconds until `status` is `completed`, `incomplete`, `failed`, or `canceled`. While the status is `processing` or `awaiting_review`, the result is still being prepared.
 

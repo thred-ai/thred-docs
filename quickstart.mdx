@@ -14,7 +14,7 @@ export THRED_API_KEY="YOUR_API_KEY"
 
 Your key selects Development or Production. Both use `https://api.thred.dev`.
 
-Choose cURL, JavaScript, or Python below. JavaScript runs on your server with Node.js: save a snippet as `example.mjs` and run `node example.mjs`. For Python, install Requests with `python -m pip install requests`. All snippets read the environment variables set on this page.
+Choose cURL, JavaScript, or Python below. JavaScript runs on your server with Node.js: save a snippet as `example.mjs` and run `node example.mjs`. For Python, install Requests with `python -m pip install requests`. All snippets read the API key set above.
 
 <Note>
 Before calling, check **Settings → Calling** and **Settings → Phone numbers** to confirm calling is enabled and an enabled default caller number is configured. Development calls also dial real phone numbers.
@@ -24,19 +24,12 @@ Before calling, check **Settings → Calling** and **Settings → Phone numbers*
 
 Replace `to` with the phone number you want to call, including its country code. This example asks whether a business is open and when it closes.
 
-Generate an idempotency key once for this collection. Reuse it if you retry the same request; use a new key for a new collection.
-
-```bash
-export THRED_REQUEST_ID="$(uuidgen)"
-```
-
 <CodeGroup>
 ```bash cURL
 curl --fail-with-body https://api.thred.dev/v1/collect \
   --request POST \
   --header "Authorization: Bearer $THRED_API_KEY" \
   --header "Content-Type: application/json" \
-  --header "Idempotency-Key: $THRED_REQUEST_ID" \
   --data '{
     "to": "+14155550123",
     "instructions": "Ask whether the business is open today and what time it closes.",
@@ -58,7 +51,6 @@ const response = await fetch("https://api.thred.dev/v1/collect", {
   headers: {
     Authorization: `Bearer ${process.env.THRED_API_KEY}`,
     "Content-Type": "application/json",
-    "Idempotency-Key": process.env.THRED_REQUEST_ID,
   },
   body: JSON.stringify({
     to: "+14155550123",
@@ -88,7 +80,6 @@ response = requests.post(
     "https://api.thred.dev/v1/collect",
     headers={
         "Authorization": f"Bearer {os.environ['THRED_API_KEY']}",
-        "Idempotency-Key": os.environ["THRED_REQUEST_ID"],
     },
     json={
         "to": "+14155550123",

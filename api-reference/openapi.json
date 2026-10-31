@@ -96,13 +96,13 @@
           "Collect"
         ],
         "summary": "Create a collection",
-        "description": "Collect answers from a known phone number. Send instructions and an output schema, then use the returned ID to retrieve the result, or provide a webhook_id. Reuse the same Idempotency-Key when retrying the same request. Development and Production can both place real calls.",
+        "description": "Collect answers from a known phone number. Send instructions and an output schema, then use the returned ID to retrieve the result, or provide a webhook_id. Development and Production can both place real calls.",
         "parameters": [
           {
             "name": "Idempotency-Key",
             "in": "header",
-            "required": true,
-            "description": "A unique value for this collection. Use 1\u2013200 printable, non-space ASCII characters. Reuse it only for retries of the same request.",
+            "required": false,
+            "description": "Optional key for retrying a request without creating another collection. Omit it to create a new collection on each POST. Reuse the same key only with the same request; a different request returns 409. Use 1\u2013200 printable, non-space ASCII characters.",
             "schema": {
               "type": "string",
               "minLength": 1,
@@ -1598,7 +1598,7 @@
         }
       },
       "Unavailable": {
-        "description": "Calling or the backend is unavailable. Codes include calling_unavailable, environment_unavailable, not_configured, and backend_unavailable. For a transient creation failure, retry the same request with the same Idempotency-Key.",
+        "description": "Calling or the backend is unavailable. Codes include calling_unavailable, environment_unavailable, not_configured, and backend_unavailable.",
         "content": {
           "application/json": {
             "schema": {
@@ -1608,7 +1608,7 @@
         }
       },
       "InternalError": {
-        "description": "Unexpected server error. When retrying creation, reuse the original Idempotency-Key.",
+        "description": "Unexpected server error.",
         "content": {
           "application/json": {
             "schema": {

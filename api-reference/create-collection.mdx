@@ -5,6 +5,8 @@ openapi: "api-reference/openapi.json POST /v1/collect"
 
 Use the [quickstart](/quickstart) to set your API key. JavaScript uses Node.js; Python uses Requests.
 
+`input` holds context values for the call. `output` is the JSON Schema defining the answers you want back in `data`. `input` is optional and defaults to an empty object.
+
 <RequestExample>
 ```bash cURL
 curl --fail-with-body https://api.thred.dev/v1/collect \
@@ -13,8 +15,9 @@ curl --fail-with-body https://api.thred.dev/v1/collect \
   --header "Content-Type: application/json" \
   --data '{
     "to": "+14155550123",
-    "instructions": "Ask whether the business is open today and what time it closes.",
-    "output_schema": {
+    "instructions": "Ask whether the business is open on the date in input and what time it closes.",
+    "input": { "date": "today" },
+    "output": {
       "type": "object",
       "properties": {
         "is_open": { "type": "boolean" },
@@ -35,8 +38,9 @@ const response = await fetch("https://api.thred.dev/v1/collect", {
   },
   body: JSON.stringify({
     to: "+14155550123",
-    instructions: "Ask whether the business is open today and what time it closes.",
-    output_schema: {
+    instructions: "Ask whether the business is open on the date in input and what time it closes.",
+    input: { date: "today" },
+    output: {
       type: "object",
       properties: {
         is_open: { type: "boolean" },
@@ -64,8 +68,9 @@ response = requests.post(
     },
     json={
         "to": "+14155550123",
-        "instructions": "Ask whether the business is open today and what time it closes.",
-        "output_schema": {
+        "instructions": "Ask whether the business is open on the date in input and what time it closes.",
+        "input": { "date": "today" },
+        "output": {
             "type": "object",
             "properties": {
                 "is_open": { "type": "boolean" },

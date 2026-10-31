@@ -22,7 +22,7 @@ Before calling, check **Settings → Calling** and **Settings → Phone numbers*
 
 ## 2. Start a collection
 
-Replace `to` with the phone number you want to call, including its country code. This example asks whether a business is open and when it closes.
+Replace `to` with the phone number you want to call, including its country code. Put known context values in `input` and define the answers you want as a JSON Schema in `output`. Here, `input.date` tells Thred which day to ask about. `input` is optional and defaults to an empty object.
 
 <CodeGroup>
 ```bash cURL
@@ -32,8 +32,9 @@ curl --fail-with-body https://api.thred.dev/v1/collect \
   --header "Content-Type: application/json" \
   --data '{
     "to": "+14155550123",
-    "instructions": "Ask whether the business is open today and what time it closes.",
-    "output_schema": {
+    "instructions": "Ask whether the business is open on the date in input and what time it closes.",
+    "input": { "date": "today" },
+    "output": {
       "type": "object",
       "properties": {
         "is_open": { "type": "boolean" },
@@ -54,8 +55,9 @@ const response = await fetch("https://api.thred.dev/v1/collect", {
   },
   body: JSON.stringify({
     to: "+14155550123",
-    instructions: "Ask whether the business is open today and what time it closes.",
-    output_schema: {
+    instructions: "Ask whether the business is open on the date in input and what time it closes.",
+    input: { date: "today" },
+    output: {
       type: "object",
       properties: {
         is_open: { type: "boolean" },
@@ -83,8 +85,9 @@ response = requests.post(
     },
     json={
         "to": "+14155550123",
-        "instructions": "Ask whether the business is open today and what time it closes.",
-        "output_schema": {
+        "instructions": "Ask whether the business is open on the date in input and what time it closes.",
+        "input": { "date": "today" },
+        "output": {
             "type": "object",
             "properties": {
                 "is_open": { "type": "boolean" },
@@ -169,4 +172,4 @@ A completed response includes your answers in `data`:
 
 If the collection is `incomplete`, use the answers in `partial_data` and check `missing_fields`. A failed or canceled collection may have no result.
 
-That's the basic flow. Change the instructions and schema to [build your own use case](/guides/what-you-can-build), or see [Create a collection](/api-reference/create-collection) for all available fields.
+That's the basic flow. Change `instructions`, `input`, and `output` to [build your own use case](/guides/what-you-can-build), or see [Create a collection](/api-reference/create-collection) for all available fields.

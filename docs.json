@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "linden",
+  "theme": "mint",
   "name": "Thred API",
   "colors": {
-    "primary": "#07b3f7",
-    "light": "#07b3f7",
-    "dark": "#63d3ff"
+    "primary": "#3AA4C1",
+    "light": "#3AA4C1",
+    "dark": "#3AA4C1"
   },
   "navigation": {
     "groups": [
@@ -39,12 +39,13 @@
   },
   "favicon": "/images/icon.ico",
   "logo": {
-    "light": "/images/2.png",
-    "dark": "/images/3.png"
+    "light": "/images/logo_full_dark.png",
+    "dark": "/images/logo_full_light.png"
   },
   "background": {
     "color": {
-      "dark": "#1A1A1A"
+      "light": "#FFFFFF",
+      "dark": "#1D1D1D"
     }
   },
   "description": "The data API for the phone. Collect structured answers from a known phone number.",
@@ -74,5 +75,8 @@
       ],
       "defaults": "required"
     }
+  },
+  "fonts": {
+    "family": "Instrument Sans"
   }
 }

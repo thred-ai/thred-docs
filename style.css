@@ -1,0 +1,319 @@
+/* Shared with thred-phone-data: tailwind.config.ts, globals.css, SettingsButton,
+   and PowerWorkspace. Keep docs prose readable while using the product's UI. */
+:root {
+  --thred-surface: #ffffff;
+  --thred-muted-surface: #f2f2f2;
+  --thred-text: #2b333b;
+  --thred-secondary-text: #717989;
+  --thred-border: #dcdcdc;
+  --thred-panel-border: #f0f0f0;
+  --thred-hover: #f3f3f3;
+  --thred-accent: #3aa4c1;
+  --thred-link: #0957d0;
+  --sidebar-width: 14rem;
+  --content-width: 48rem;
+}
+
+.dark {
+  --thred-surface: #1d1d1d;
+  --thred-muted-surface: #303030;
+  --thred-text: lch(77.594 1 139.088);
+  --thred-secondary-text: lch(67.594 1 139.088);
+  --thred-border: #414141;
+  --thred-panel-border: #2d2d2d;
+  --thred-hover: #2a2a2a;
+  --thred-link: #8ab4f8;
+}
+
+body {
+  color: var(--thred-text);
+  font-size: 14px;
+  letter-spacing: calc(0.6px - 0.05em);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+#navbar, #navbar-transition, #mobile-nav, #mobile-nav-content {
+  background: var(--thred-surface);
+  border-color: var(--thred-panel-border);
+}
+
+img.nav-logo {
+  height: 28px !important;
+  width: auto !important;
+}
+
+#page-title {
+  color: var(--thred-text);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  letter-spacing: -0.025em;
+}
+
+#header .eyebrow {
+  color: var(--thred-secondary-text);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+#header > div {
+  color: var(--thred-secondary-text);
+  font-size: 14px;
+  line-height: 24px;
+}
+
+:is(#content, #api-playground-2-operation-page) {
+  margin-top: 28px;
+}
+
+#content-container .prose,
+#api-playground-2-operation-page {
+  color: var(--thred-text);
+  font-size: 14px;
+  line-height: 24px;
+  --tw-prose-body: var(--thred-text);
+  --tw-prose-headings: var(--thred-text);
+  --tw-prose-bold: var(--thred-text);
+  --tw-prose-links: var(--thred-link);
+  --tw-prose-counters: var(--thred-secondary-text);
+  --tw-prose-bullets: var(--thred-secondary-text);
+  --tw-prose-code: var(--thred-text);
+  --tw-prose-th-borders: var(--thred-border);
+  --tw-prose-td-borders: var(--thred-panel-border);
+}
+
+:is(#content, #api-playground-2-operation-page) :is(h2, h3, h4) {
+  color: var(--thred-text);
+  font-weight: 600;
+  letter-spacing: calc(0.6px - 0.05em);
+}
+
+:is(#content, #api-playground-2-operation-page) h2 {
+  font-size: 18px;
+  line-height: 28px;
+  margin-top: 32px;
+  margin-bottom: 12px;
+}
+
+:is(#content, #api-playground-2-operation-page) h3, :is(#content, #api-playground-2-operation-page) h4 {
+  font-size: 14px;
+  line-height: 24px;
+}
+
+:is(#content, #api-playground-2-operation-page) :is(p, ul, ol) {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+:is(#content, #api-playground-2-operation-page) strong {
+  color: var(--thred-text);
+  font-weight: 600;
+}
+
+:is(#content, #api-playground-2-operation-page) a:not(.card):not([aria-label]) {
+  color: var(--thred-link);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+#sidebar a, #mobile-nav-content a {
+  color: var(--thred-text);
+  font-size: 14px;
+  font-weight: 400;
+  border-radius: 6px;
+}
+
+#sidebar a:hover, #mobile-nav-content a:hover {
+  background: var(--thred-hover);
+}
+
+/* The installed Mint theme marks the current link with this color utility. */
+#sidebar .sidebar-group a[class~="bg-primary/10"],
+#mobile-nav-content .sidebar-group a[class~="bg-primary/10"] {
+  color: var(--thred-text);
+  background: var(--thred-muted-surface);
+  font-weight: 500;
+  text-shadow: none;
+}
+
+#sidebar-title {
+  color: var(--thred-secondary-text);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+#table-of-contents, #table-of-contents a, #footer, .navbar-link {
+  color: var(--thred-secondary-text);
+  font-size: 13px;
+}
+
+#table-of-contents a:hover {
+  color: var(--thred-text);
+}
+
+#search-bar-entry {
+  height: 32px;
+  border: 1px solid var(--thred-border);
+  border-radius: 6px;
+  background: var(--thred-surface);
+  color: var(--thred-secondary-text);
+  font-size: 13px;
+  box-shadow: none;
+  filter: none;
+}
+
+#topbar-cta-button a {
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid var(--thred-accent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--thred-accent) 80%, transparent);
+  color: #2b333b;
+  font-size: 13px;
+  font-weight: 400;
+  box-shadow: none;
+}
+
+#topbar-cta-button a:hover {
+  background: color-mix(in srgb, var(--thred-accent) 60%, transparent);
+}
+
+#topbar-cta-button a > span {
+  background: transparent;
+  border-radius: inherit;
+}
+
+#topbar-cta-button a :is(span, svg) {
+  color: inherit;
+}
+
+.card {
+  border: 1px solid var(--thred-border);
+  border-radius: 6px;
+  background: var(--thred-surface);
+  box-shadow: none;
+}
+
+.card:hover {
+  border-color: var(--thred-border) !important;
+  background: var(--thred-hover);
+}
+
+[data-component-part="card-content-container"] {
+  padding: 16px;
+}
+
+[data-component-part="card-icon"] {
+  width: 20px;
+  height: 20px;
+  color: var(--thred-accent);
+  fill: var(--thred-accent);
+}
+
+:is(#content, #api-playground-2-operation-page) [data-component-part="card-title"] {
+  color: var(--thred-text);
+  font-size: 14px;
+  line-height: 24px;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+[data-component-part="card-content"] {
+  color: var(--thred-secondary-text);
+  font-size: 14px;
+  line-height: 24px;
+}
+
+:is(#content, #api-playground-2-operation-page) table {
+  width: 100%;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+:is(#content, #api-playground-2-operation-page) th, :is(#content, #api-playground-2-operation-page) td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--thred-panel-border);
+}
+
+:is(#content, #api-playground-2-operation-page) th {
+  background: var(--thred-muted-surface);
+  color: var(--thred-secondary-text);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+:is(#content, #api-playground-2-operation-page) .callout {
+  border: 1px solid var(--thred-border);
+  border-radius: 6px;
+  background: var(--thred-muted-surface);
+  color: var(--thred-text);
+  font-size: 14px;
+  line-height: 24px;
+}
+
+:is(#content, #api-playground-2-operation-page) [data-component-part="callout-content"] {
+  color: var(--thred-text);
+  line-height: 24px;
+}
+
+:is(#content, #api-playground-2-operation-page) [data-component-part="callout-icon"] svg {
+  color: var(--thred-secondary-text);
+}
+
+.code-block, .code-group {
+  border: 1px solid var(--thred-border);
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+#content-container .code-block-background {
+  /* Mint's syntax theme sets its background with !important. */
+  background: var(--thred-surface) !important;
+  border-radius: inherit;
+}
+
+pre, code, kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  letter-spacing: 0;
+}
+
+pre, pre code {
+  font-size: 13px;
+  line-height: 24px;
+}
+
+:is(#content, #api-playground-2-operation-page) :not(pre) > code {
+  background: var(--thred-muted-surface);
+  color: var(--thred-text);
+  border-color: var(--thred-border);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+#pagination a, .expandable, .option-dropdown {
+  border-color: var(--thred-border);
+  border-radius: 6px;
+}
+
+@media (min-width: 1024px) {
+  #sidebar {
+    width: var(--sidebar-width);
+  }
+
+  #sidebar-content {
+    padding-right: 12px;
+  }
+
+  #content-area {
+    padding-left: calc(var(--sidebar-width) + 6rem);
+  }
+}
+
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--thred-link);
+  outline-offset: 3px;
+}

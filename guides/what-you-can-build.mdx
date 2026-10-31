@@ -29,7 +29,6 @@ curl --fail-with-body https://api.thred.dev/v1/collect \
     "instructions": "Ask whether the product in input is in stock. If it is, ask for its price in the requested currency.",
     "input": { "product": "6-foot USB-C charging cable", "currency": "USD" },
     "output": {
-      "type": "object",
       "properties": {
         "in_stock": {
           "type": "boolean",
@@ -58,7 +57,6 @@ const response = await fetch("https://api.thred.dev/v1/collect", {
     instructions: "Ask whether the product in input is in stock. If it is, ask for its price in the requested currency.",
     input: { product: "6-foot USB-C charging cable", currency: "USD" },
     output: {
-      type: "object",
       properties: {
         in_stock: {
           type: "boolean",
@@ -94,7 +92,6 @@ response = requests.post(
         "instructions": "Ask whether the product in input is in stock. If it is, ask for its price in the requested currency.",
         "input": { "product": "6-foot USB-C charging cable", "currency": "USD" },
         "output": {
-            "type": "object",
             "properties": {
                 "in_stock": {
                     "type": "boolean",
@@ -120,9 +117,9 @@ Thred returns the collection's ID immediately. [Retrieve the collection](/api-re
 
 ## Shape the answers
 
-Use strings, numbers, integers, booleans, objects, and arrays in `output`. Fields can also allow `null`, as the price does above. Give fields clear descriptions and list the answers you need under `required`.
+Output fields can be strings, numbers, integers, booleans, objects, or arrays. Fields can also allow `null`, as the price does above. Give fields clear descriptions and list the answers you need under `required`.
 
-The root must be an object. Every object needs `properties` and `additionalProperties: false`; arrays need an `items` schema. Thred supports a small JSON Schema subset. The [API reference](/api-reference/create-collection) lists the supported fields.
+The output is always an object, so omit its top-level `type`. Define `properties`, list `required` fields, and set `additionalProperties` to `false`. Nested objects still need `type: "object"`, `properties`, and `additionalProperties: false`; arrays need an `items` schema. Thred supports a small JSON Schema subset. The [API reference](/api-reference/create-collection) lists the supported fields.
 
 ## Add context and routing
 

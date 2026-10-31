@@ -127,7 +127,6 @@
                   "date": "today"
                 },
                 "output": {
-                  "type": "object",
                   "properties": {
                     "is_open": {
                       "type": "boolean"
@@ -823,7 +822,8 @@
             "enum": [
               "object"
             ],
-            "description": "The result must be a JSON object."
+            "description": "Optional. The output root is always an object; omit this field when creating a collection.",
+            "default": "object"
           },
           "description": {
             "type": "string",
@@ -858,14 +858,12 @@
           }
         },
         "required": [
-          "type",
           "properties",
           "additionalProperties"
         ],
-        "description": "The JSON Schema defining the answers returned in data. Define its properties and required fields, and set additionalProperties to false.",
+        "description": "The JSON Schema defining the answers returned in data. The output root is always an object, so no top-level type is needed. Define properties and required fields, and set additionalProperties to false.",
         "additionalProperties": false,
         "example": {
-          "type": "object",
           "properties": {
             "is_open": {
               "type": "boolean"

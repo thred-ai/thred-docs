@@ -15,7 +15,7 @@ With the [Mintlify CLI](https://www.mintlify.com/docs/cli/install) installed, ru
 - `docs.json`: navigation, Instrument Sans, and the shared Thred wordmark.
 - `style.css`: typography, light/dark colors, controls, and spacing matched to `thred-phone-data`.
 
-Keep the getting-started content to the two simple examples: business hours and inventory. Document the implemented `to`, `instructions`, `input`, and `output` request fields and `call_` IDs. Search is not an available API.
+Keep the getting-started content to the two simple examples: business hours and inventory. Document the implemented `to`, `instructions`, `input`, and `output` request fields and `call_` IDs. The output root is always an object; omit its `type` in request examples while keeping field types explicit. Search is not an available API.
 
 ## Static validation
 

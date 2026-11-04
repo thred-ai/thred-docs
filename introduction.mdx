@@ -6,13 +6,13 @@ icon: "phone"
 
 Thred collects information over the phone and returns structured JSON.
 
-Use the **Collect API** when you know who to ask. Provide a phone number and instructions, add known context values in `input`, and define the answers you want with a JSON Schema in `output`. Thred makes the call and gets the answers: business hours, inventory, availability, and more.
+Use the **Collect API** when you know who to ask. Provide a phone number and instructions, add known context values in `input`, and name the answers you want and their types in `output`. Thred makes the call and gets the answers: business hours, inventory, availability, and more.
 
 ## How it works
 
 1. **Choose the source.** Send the phone number you want Thred to call and what you want to find out.
 2. **Choose your output.** Define the fields you want back in `output`. The result is always an object.
-3. **Get the answers.** Save the collection ID and retrieve the result when it is ready.
+3. **Get the answers.** Save the collection ID and retrieve the answers in `output` when they are ready.
 
 Thred handles the conversation and phone menus, and can request human assistance when needed.
 

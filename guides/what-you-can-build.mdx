@@ -3,7 +3,7 @@ title: "What you can build"
 description: "Turn questions that require a phone call into structured answers."
 ---
 
-Use Collect when you already have a source's phone number. Use `instructions` for what to ask, `input` for known context values, and `output` for the JSON Schema of the answers you need. Your application gets structured JSON after Thred collects the answers.
+Use Collect when you already have a source's phone number. Use `instructions` for what to ask, `input` for known context values, and `output` for the answer names and types you need. Your application gets structured JSON after Thred collects the answers.
 
 ## Information you can collect
 
@@ -26,21 +26,11 @@ curl --fail-with-body https://api.thred.dev/v1/collect \
   --header "Content-Type: application/json" \
   --data '{
     "to": "+14155550123",
-    "instructions": "Ask whether the product in input is in stock. If it is, ask for its price in the requested currency.",
+    "instructions": "Ask whether the product in input is in stock and ask for its price in the requested currency.",
     "input": { "product": "6-foot USB-C charging cable", "currency": "USD" },
     "output": {
-      "properties": {
-        "in_stock": {
-          "type": "boolean",
-          "description": "Whether a 6-foot USB-C charging cable is currently in stock."
-        },
-        "price_usd": {
-          "type": ["number", "null"],
-          "description": "The quoted price in USD, or null if the cable is unavailable."
-        }
-      },
-      "required": ["in_stock", "price_usd"],
-      "additionalProperties": false
+      "in_stock": "boolean",
+      "price_usd": "number"
     }
   }'
 ```
@@ -54,21 +44,11 @@ const response = await fetch("https://api.thred.dev/v1/collect", {
   },
   body: JSON.stringify({
     to: "+14155550123",
-    instructions: "Ask whether the product in input is in stock. If it is, ask for its price in the requested currency.",
+    instructions: "Ask whether the product in input is in stock and ask for its price in the requested currency.",
     input: { product: "6-foot USB-C charging cable", currency: "USD" },
     output: {
-      properties: {
-        in_stock: {
-          type: "boolean",
-          description: "Whether a 6-foot USB-C charging cable is currently in stock.",
-        },
-        price_usd: {
-          type: ["number", "null"],
-          description: "The quoted price in USD, or null if the cable is unavailable.",
-        },
-      },
-      required: ["in_stock", "price_usd"],
-      additionalProperties: false,
+      in_stock: "boolean",
+      price_usd: "number",
     },
   }),
 });
@@ -89,21 +69,11 @@ response = requests.post(
     },
     json={
         "to": "+14155550123",
-        "instructions": "Ask whether the product in input is in stock. If it is, ask for its price in the requested currency.",
+        "instructions": "Ask whether the product in input is in stock and ask for its price in the requested currency.",
         "input": { "product": "6-foot USB-C charging cable", "currency": "USD" },
         "output": {
-            "properties": {
-                "in_stock": {
-                    "type": "boolean",
-                    "description": "Whether a 6-foot USB-C charging cable is currently in stock.",
-                },
-                "price_usd": {
-                    "type": ["number", "null"],
-                    "description": "The quoted price in USD, or null if the cable is unavailable.",
-                },
-            },
-            "required": ["in_stock", "price_usd"],
-            "additionalProperties": False,
+            "in_stock": "boolean",
+            "price_usd": "number",
         },
     },
     timeout=30,
@@ -113,13 +83,13 @@ print(response.json()["id"])
 ```
 </CodeGroup>
 
-Thred returns the collection's ID immediately. [Retrieve the collection](/api-reference/get-collection) to check its status. Once `status` is `completed`, `data` contains the answers in your requested shape. If the result is `incomplete`, check `partial_data` for the answers it collected.
+Thred returns the collection's ID immediately. [Retrieve the collection](/api-reference/get-collection) to check its status. Read the answers from `output`. If the result is `incomplete`, `output` contains the available answers and `missing_fields` explains what is missing.
 
 ## Shape the answers
 
-Output fields can be strings, numbers, integers, booleans, objects, or arrays. Fields can also allow `null`, as the price does above. Give fields clear descriptions and list the answers you need under `required`.
+Map each field name to one of four types: `string`, `number`, `integer`, or `boolean`. Use clear names and put any details about what to ask in `instructions`.
 
-The output is always an object, so omit its top-level `type`. Define `properties`, list `required` fields, and set `additionalProperties` to `false`. Nested objects still need `type: "object"`, `properties`, and `additionalProperties: false`; arrays need an `items` schema. Thred supports a small JSON Schema subset. The [API reference](/api-reference/create-collection) lists the supported fields.
+All declared answers are expected. You only need to provide the field names and types shown above.
 
 ## Add context and routing
 
@@ -128,7 +98,7 @@ The output is always an object, so omit its top-level `type`. Define `properties
 | `input` | Pass a JSON object of context values, such as a product name or reference number. Optional; defaults to `{}`. |
 | `navigation` | Specify a contact name, department, extension, or language. |
 | `max_duration_seconds` | Set how long the call can run within your workspace's limit. |
-| `metadata` | Attach your own identifiers so you can match the result to a record in your app. |
+| `metadata` | Attach your own identifiers to the stored collection request. |
 | `webhook_id` | Receive a signed completion event at an endpoint configured in the dashboard. |
 
 Start with the [quickstart](/quickstart), then add these options as your workflow needs them.

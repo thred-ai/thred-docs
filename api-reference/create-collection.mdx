@@ -5,7 +5,7 @@ openapi: "api-reference/openapi.json POST /v1/collect"
 
 Use the [quickstart](/quickstart) to set your API key. JavaScript uses Node.js; Python uses Requests.
 
-`input` holds context values for the call. `output` is the JSON Schema defining the answers you want back in `data`. `input` is optional and defaults to an empty object. The output is always an object: define `properties`, list `required` fields, and set `additionalProperties` to `false`. No top-level `type` is needed.
+`input` holds optional context for the call. In `output`, map each answer name to `string`, `number`, `integer`, or `boolean`. Thred expects all declared answers and returns their values in the collection's `output`.
 
 <RequestExample>
 ```bash cURL
@@ -18,12 +18,8 @@ curl --fail-with-body https://api.thred.dev/v1/collect \
     "instructions": "Ask whether the business is open on the date in input and what time it closes.",
     "input": { "date": "today" },
     "output": {
-      "properties": {
-        "is_open": { "type": "boolean" },
-        "closes_at": { "type": "string" }
-      },
-      "required": ["is_open", "closes_at"],
-      "additionalProperties": false
+      "is_open": "boolean",
+      "closes_at": "string"
     }
   }'
 ```
@@ -40,12 +36,8 @@ const response = await fetch("https://api.thred.dev/v1/collect", {
     instructions: "Ask whether the business is open on the date in input and what time it closes.",
     input: { date: "today" },
     output: {
-      properties: {
-        is_open: { type: "boolean" },
-        closes_at: { type: "string" }
-      },
-      required: ["is_open", "closes_at"],
-      "additionalProperties": false
+      is_open: "boolean",
+      closes_at: "string"
     }
   }),
 });
@@ -69,12 +61,8 @@ response = requests.post(
         "instructions": "Ask whether the business is open on the date in input and what time it closes.",
         "input": { "date": "today" },
         "output": {
-            "properties": {
-                "is_open": { "type": "boolean" },
-                "closes_at": { "type": "string" }
-            },
-            "required": ["is_open", "closes_at"],
-            "additionalProperties": False
+            "is_open": "boolean",
+            "closes_at": "string"
         }
     },
     timeout=30,

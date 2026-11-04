@@ -3,7 +3,7 @@
   "info": {
     "title": "Thred API",
     "version": "1.0.0",
-    "description": "Thred is the data API for the phone. Use Collect when you know who to ask: send a phone number and instructions, add context values in input, and define the answers you want with a JSON Schema in output. Use the same base URL for Development and Production; your API key selects the environment."
+    "description": "Thred is the data API for the phone. Use Collect when you know who to ask: send a phone number and instructions, add context values in input, and name the answers you want and their types in output. Use the same base URL for Development and Production; your API key selects the environment."
   },
   "servers": [
     {
@@ -96,7 +96,7 @@
           "Collect"
         ],
         "summary": "Create a collection",
-        "description": "Collect answers from a known phone number. Send instructions, optional context values in input, and a JSON Schema in output. Use the returned ID to retrieve the result, or provide a webhook_id. Development and Production can both place real calls.",
+        "description": "Collect answers from a known phone number. Send instructions, optional context in input, and an output map of answer names to types. Use the returned ID to retrieve the result, or provide a webhook_id. Development and Production can both place real calls.",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -114,7 +114,7 @@
         ],
         "requestBody": {
           "required": true,
-          "description": "The destination, task, input context, and output JSON Schema.",
+          "description": "The destination, instructions, optional input context, and requested output fields.",
           "content": {
             "application/json": {
               "schema": {
@@ -127,19 +127,8 @@
                   "date": "today"
                 },
                 "output": {
-                  "properties": {
-                    "is_open": {
-                      "type": "boolean"
-                    },
-                    "closes_at": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "is_open",
-                    "closes_at"
-                  ],
-                  "additionalProperties": false
+                  "is_open": "boolean",
+                  "closes_at": "string"
                 }
               }
             }
@@ -152,6 +141,10 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AcceptedCall"
+                },
+                "example": {
+                  "id": "call_123e4567-e89b-42d3-a456-426614174000",
+                  "status": "queued"
                 }
               }
             }
@@ -253,87 +246,22 @@
           "Collect"
         ],
         "summary": "Get a collection",
-        "description": "Get the latest collection status and results. Keep polling until status is completed, incomplete, failed, or canceled. Read completed answers from data and incomplete answers from partial_data.",
+        "description": "Get the latest status and answers in output. Keep polling until status is completed, incomplete, failed, or canceled. output is null before results are available. Incomplete results include missing_fields; error is included only when present.",
         "responses": {
           "200": {
             "description": "The current collection and its published results.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CallDetail"
+                  "$ref": "#/components/schemas/Call"
                 },
                 "example": {
                   "id": "call_123e4567-e89b-42d3-a456-426614174000",
-                  "environment": "development",
                   "status": "completed",
-                  "handling": "ai",
-                  "to": "+14155550123",
-                  "from": "+12025550124",
-                  "created_at": "2026-10-30T14:00:00.000Z",
-                  "updated_at": "2026-10-30T14:01:20.000Z",
-                  "started_at": "2026-10-30T14:00:02.000Z",
-                  "ended_at": "2026-10-30T14:01:12.000Z",
-                  "human_assisted": false,
-                  "outcome": "data-completed",
-                  "data": {
+                  "output": {
                     "is_open": true,
                     "closes_at": "5 PM"
-                  },
-                  "partial_data": null,
-                  "missing_fields": [],
-                  "error": null,
-                  "duration_seconds": 70,
-                  "usage": {
-                    "elapsed_job_seconds": 70,
-                    "billed_seconds": null,
-                    "billing_status": "unreconciled"
-                  },
-                  "recording_status": "disabled",
-                  "recording": {
-                    "status": "disabled",
-                    "duration_seconds": null,
-                    "audio_started_at": null,
-                    "error": null
-                  },
-                  "cancellation_requested": false,
-                  "screener_sequence": [
-                    {
-                      "message": "Hello, I am calling to confirm today\u2019s business hours.",
-                      "type": "intro"
-                    }
-                  ],
-                  "screener_sequence_source": "generated",
-                  "navigation_cache_source_call_id": null,
-                  "request": {
-                    "to": "+14155550123",
-                    "instructions": "Ask whether the business is open on the date in input and what time it closes.",
-                    "input": {
-                      "date": "today"
-                    },
-                    "output": {
-                      "type": "object",
-                      "properties": {
-                        "is_open": {
-                          "type": "boolean"
-                        },
-                        "closes_at": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "is_open",
-                        "closes_at"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "max_duration_seconds": 300,
-                    "metadata": {},
-                    "record": false
-                  },
-                  "navigation_routes": []
+                  }
                 }
               }
             }
@@ -542,15 +470,6 @@
         ],
         "description": "Final: completed, incomplete, failed, canceled. Continue polling for all other statuses."
       },
-      "CallHandling": {
-        "type": "string",
-        "enum": [
-          "ai",
-          "awaiting_operator",
-          "operator"
-        ],
-        "description": "Who is handling the call: AI, waiting for an internal operator, or an internal operator."
-      },
       "ErrorDetail": {
         "type": "object",
         "properties": {
@@ -685,200 +604,6 @@
         ],
         "additionalProperties": false
       },
-      "OutputSchemaNode": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "description": "One supported type, or an array containing one supported non-null type and null. An object schema must include properties and additionalProperties: false; an array schema must include items.",
-            "oneOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "object",
-                  "array",
-                  "string",
-                  "number",
-                  "integer",
-                  "boolean",
-                  "null"
-                ]
-              },
-              {
-                "type": "array",
-                "minItems": 1,
-                "maxItems": 2,
-                "uniqueItems": true,
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "object",
-                    "array",
-                    "string",
-                    "number",
-                    "integer",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            ]
-          },
-          "description": {
-            "type": "string",
-            "maxLength": 2000,
-            "description": "Explain what the answer should contain."
-          },
-          "title": {
-            "type": "string",
-            "maxLength": 2000
-          },
-          "properties": {
-            "type": "object",
-            "description": "Object fields. Names must contain 1\u2013120 characters and cannot be __proto__, prototype, or constructor.",
-            "additionalProperties": {
-              "type": "object",
-              "additionalProperties": true,
-              "description": "A nested schema with the same supported fields. Every node needs type; objects need properties and additionalProperties: false; arrays need items."
-            }
-          },
-          "required": {
-            "type": "array",
-            "description": "Unique names declared in properties. Required answers that cannot be obtained prevent a completed result.",
-            "uniqueItems": true,
-            "items": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": {
-            "type": "boolean",
-            "enum": [
-              false
-            ],
-            "description": "Required and always false for every object schema."
-          },
-          "items": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "The schema for each array item, using the same supported fields."
-          },
-          "enum": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 100,
-            "items": {
-              "oneOf": [
-                {
-                  "type": "string",
-                  "nullable": true
-                },
-                {
-                  "type": "number"
-                },
-                {
-                  "type": "boolean"
-                }
-              ]
-            },
-            "description": "Primitive string, number, boolean, or null values. Each value must satisfy the declared type and bounds."
-          },
-          "minItems": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 10000
-          },
-          "maxItems": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 10000
-          },
-          "minLength": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 10000
-          },
-          "maxLength": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 10000
-          },
-          "minimum": {
-            "type": "number"
-          },
-          "maximum": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "type"
-        ],
-        "description": "Supported JSON Schema fields. Maximum 128 nodes and 8 nesting levels below the root. Keywords must match their type; minimum bounds cannot exceed maximum bounds.",
-        "additionalProperties": false
-      },
-      "OutputSchema": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": [
-              "object"
-            ],
-            "description": "Optional. The output root is always an object; omit this field when creating a collection.",
-            "default": "object"
-          },
-          "description": {
-            "type": "string",
-            "maxLength": 2000,
-            "description": "Explain what the answer should contain."
-          },
-          "title": {
-            "type": "string",
-            "maxLength": 2000
-          },
-          "properties": {
-            "type": "object",
-            "description": "Object fields. Names must contain 1\u2013120 characters and cannot be __proto__, prototype, or constructor.",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/OutputSchemaNode"
-            }
-          },
-          "required": {
-            "type": "array",
-            "description": "Unique names declared in properties. Required answers that cannot be obtained prevent a completed result.",
-            "uniqueItems": true,
-            "items": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": {
-            "type": "boolean",
-            "enum": [
-              false
-            ],
-            "description": "Required and always false for every object schema."
-          }
-        },
-        "required": [
-          "properties",
-          "additionalProperties"
-        ],
-        "description": "The JSON Schema defining the answers returned in data. The output root is always an object, so no top-level type is needed. Define properties and required fields, and set additionalProperties to false.",
-        "additionalProperties": false,
-        "example": {
-          "properties": {
-            "is_open": {
-              "type": "boolean"
-            },
-            "closes_at": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "is_open",
-            "closes_at"
-          ],
-          "additionalProperties": false
-        }
-      },
       "CreateCallRequest": {
         "type": "object",
         "properties": {
@@ -904,7 +629,7 @@
             }
           },
           "output": {
-            "$ref": "#/components/schemas/OutputSchema"
+            "$ref": "#/components/schemas/OutputFields"
           },
           "max_duration_seconds": {
             "type": "integer",
@@ -957,23 +682,6 @@
         "description": "Send UTF-8 JSON, up to 64 KiB. Unknown fields are rejected.",
         "additionalProperties": false
       },
-      "CallRequestSnapshot": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/CreateCallRequest"
-          },
-          {
-            "type": "object",
-            "required": [
-              "input",
-              "max_duration_seconds",
-              "metadata",
-              "record"
-            ]
-          }
-        ],
-        "description": "The accepted request with defaults applied and text normalized. Client metadata remains available here."
-      },
       "AcceptedCall": {
         "type": "object",
         "properties": {
@@ -984,413 +692,48 @@
           },
           "status": {
             "$ref": "#/components/schemas/CallStatus"
-          },
-          "reused": {
-            "type": "boolean",
-            "description": "True when the same idempotency key and normalized request already existed. No new collection is created.",
-            "example": false
-          },
-          "environment": {
-            "$ref": "#/components/schemas/Environment"
           }
         },
         "required": [
           "id",
-          "status",
-          "reused",
-          "environment"
-        ]
-      },
-      "RecordingStatus": {
-        "type": "string",
-        "enum": [
-          "disabled",
-          "pending",
-          "starting",
-          "recording",
-          "processing",
-          "ready",
-          "failed"
-        ],
-        "description": "Recording progresses independently of the call result. Hosted recording is currently disabled."
-      },
-      "Recording": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "$ref": "#/components/schemas/RecordingStatus"
-          },
-          "duration_seconds": {
-            "type": "number",
-            "nullable": true,
-            "description": "Recorded audio duration, when available."
-          },
-          "audio_started_at": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time",
-            "description": "Start of the recording audio clock, when available."
-          },
-          "error": {
-            "type": "string",
-            "nullable": true,
-            "description": "Recording failure details, if any."
-          }
-        },
-        "required": [
-          "status",
-          "duration_seconds",
-          "audio_started_at",
-          "error"
-        ]
-      },
-      "CallUsage": {
-        "type": "object",
-        "properties": {
-          "elapsed_job_seconds": {
-            "type": "number",
-            "nullable": true,
-            "description": "Elapsed job duration, including setup and waiting. Not a billable duration."
-          },
-          "billed_seconds": {
-            "type": "number",
-            "nullable": true,
-            "enum": [
-              null
-            ],
-            "description": "Always null until provider billing reconciliation is available."
-          },
-          "billing_status": {
-            "type": "string",
-            "enum": [
-              "unreconciled"
-            ]
-          }
-        },
-        "required": [
-          "elapsed_job_seconds",
-          "billed_seconds",
-          "billing_status"
-        ]
-      },
-      "NavigationAction": {
-        "oneOf": [
-          {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": [
-                  "press-digits"
-                ]
-              },
-              "digits": {
-                "type": "string",
-                "description": "Digits sent to the phone menu."
-              }
-            },
-            "required": [
-              "kind",
-              "digits"
-            ],
-            "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": [
-                  "speak"
-                ]
-              },
-              "text": {
-                "type": "string",
-                "description": "Spoken menu response."
-              }
-            },
-            "required": [
-              "kind",
-              "text"
-            ],
-            "additionalProperties": false
-          }
-        ]
-      },
-      "NavigationStep": {
-        "type": "object",
-        "properties": {
-          "menu": {
-            "type": "string",
-            "description": "Observed menu text."
-          },
-          "action": {
-            "$ref": "#/components/schemas/NavigationAction"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "authorized",
-              "executing",
-              "sent",
-              "failed",
-              "uncertain",
-              "canceled"
-            ]
-          }
-        },
-        "required": [
-          "menu",
-          "action",
           "status"
-        ]
-      },
-      "NavigationRoute": {
-        "type": "object",
-        "properties": {
-          "navigation_id": {
-            "type": "string",
-            "description": "Navigation episode identifier."
-          },
-          "status": {
-            "type": "string",
-            "description": "Navigation episode status."
-          },
-          "result": {
-            "type": "string",
-            "nullable": true,
-            "description": "Navigation outcome, when known."
-          },
-          "reusable": {
-            "type": "boolean",
-            "description": "Whether successful steps are eligible for automatic reuse on a matching future call."
-          },
-          "steps": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/NavigationStep"
-            }
-          }
-        },
-        "required": [
-          "navigation_id",
-          "status",
-          "result",
-          "reusable",
-          "steps"
-        ]
+        ],
+        "additionalProperties": false
       },
       "Call": {
         "type": "object",
+        "description": "The collection status and published answers. Returned by retrieve, list, and cancel endpoints and inside webhook event data.",
         "properties": {
           "id": {
             "type": "string",
             "example": "call_123e4567-e89b-42d3-a456-426614174000",
             "description": "The collection ID, using the call_ prefix."
           },
-          "environment": {
-            "$ref": "#/components/schemas/Environment"
-          },
           "status": {
             "$ref": "#/components/schemas/CallStatus"
           },
-          "handling": {
-            "$ref": "#/components/schemas/CallHandling"
-          },
-          "to": {
-            "type": "string",
-            "example": "+14155550123",
-            "description": "Destination in E.164 format."
-          },
-          "from": {
-            "type": "string",
-            "example": "+12025550124",
-            "description": "Outbound caller number in E.164 format."
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "UTC creation time."
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "UTC time of the latest update."
-          },
-          "started_at": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time",
-            "description": "UTC job start time, or null before startup."
-          },
-          "ended_at": {
-            "type": "string",
-            "nullable": true,
-            "format": "date-time",
-            "description": "UTC job end time, or null until closure. Results may still be processing afterward."
-          },
-          "human_assisted": {
-            "type": "boolean",
-            "description": "Whether an internal operator assisted the live call. Assisted results require approval before publication."
-          },
-          "outcome": {
-            "type": "string",
-            "nullable": true,
-            "description": "Call closure reason, when known. Use status to determine whether results are final."
-          },
-          "data": {
+          "output": {
             "type": "object",
             "nullable": true,
             "additionalProperties": true,
-            "description": "Complete answers matching output, or null before publication / when no complete result exists."
-          },
-          "partial_data": {
-            "type": "object",
-            "nullable": true,
-            "additionalProperties": true,
-            "description": "Available answers when a complete result could not be obtained. Missing required fields may be omitted, but remaining schema constraints still apply."
+            "description": "Answers in the requested shape. Contains available answers for an incomplete collection, or null before results are available."
           },
           "missing_fields": {
             "type": "array",
             "items": {
               "type": "string"
             },
-            "description": "Validation messages for unavailable answers, including the field path. Empty for completed and canceled collections."
+            "description": "Included only when status is incomplete. Explains which answers are missing."
           },
           "error": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "code": {
-                "type": "string"
-              },
-              "message": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "code",
-              "message"
-            ],
-            "description": "Collection failure details. This is separate from an HTTP error response."
-          },
-          "duration_seconds": {
-            "type": "number",
-            "nullable": true,
-            "description": "Elapsed job duration; not provider billable talk time."
-          },
-          "usage": {
-            "$ref": "#/components/schemas/CallUsage"
-          },
-          "recording_status": {
-            "$ref": "#/components/schemas/RecordingStatus"
-          },
-          "recording": {
-            "$ref": "#/components/schemas/Recording"
-          },
-          "cancellation_requested": {
-            "type": "boolean",
-            "description": "True once a cancellation request is recorded; does not by itself mean the call has ended."
-          },
-          "screener_sequence": {
-            "type": "array",
-            "nullable": true,
-            "items": {
-              "$ref": "#/components/schemas/ScreenerMessage"
-            },
-            "description": "Prepared or supplied screener messages, or null while preparation is pending."
-          },
-          "screener_sequence_source": {
-            "type": "string",
-            "nullable": true,
-            "enum": [
-              "provided",
-              "generated",
-              null
-            ],
-            "description": "Whether screener messages were supplied or generated."
-          },
-          "navigation_cache_source_call_id": {
-            "type": "string",
-            "nullable": true,
-            "description": "Prior call whose eligible navigation steps were loaded, or null."
-          },
-          "request": {
-            "$ref": "#/components/schemas/CallRequestSnapshot"
+            "$ref": "#/components/schemas/ErrorDetail"
           }
         },
         "required": [
           "id",
-          "environment",
           "status",
-          "handling",
-          "to",
-          "from",
-          "created_at",
-          "updated_at",
-          "started_at",
-          "ended_at",
-          "human_assisted",
-          "outcome",
-          "data",
-          "partial_data",
-          "missing_fields",
-          "error",
-          "duration_seconds",
-          "usage",
-          "recording_status",
-          "recording",
-          "cancellation_requested",
-          "screener_sequence",
-          "screener_sequence_source",
-          "navigation_cache_source_call_id",
-          "request"
-        ],
-        "description": "A collection and its published results. List responses return this shape. Detail responses also include navigation_routes."
-      },
-      "CallDetail": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Call"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "navigation_routes": {
-                "type": "array",
-                "maxItems": 16,
-                "items": {
-                  "$ref": "#/components/schemas/NavigationRoute"
-                },
-                "description": "Observed IVR navigation routes for this call."
-              }
-            },
-            "required": [
-              "navigation_routes"
-            ]
-          }
+          "output"
         ]
-      },
-      "Cancellation": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Call"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "navigation_routes": {
-                "type": "array",
-                "maxItems": 16,
-                "items": {
-                  "$ref": "#/components/schemas/NavigationRoute"
-                },
-                "description": "Included when the call is already closed, terminal, or previously marked for cancellation."
-              }
-            }
-          }
-        ],
-        "description": "Current collection state. Retrieve the collection to confirm it reaches a terminal status."
       },
       "CallList": {
         "type": "object",
@@ -1539,6 +882,44 @@
           "billing_status",
           "billed_seconds",
           "data"
+        ]
+      },
+      "OutputFields": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": {
+          "type": "string",
+          "enum": [
+            "string",
+            "number",
+            "integer",
+            "boolean"
+          ]
+        },
+        "description": "Map each answer name to its type. All declared answers are expected. Names must contain 1\u2013120 characters and cannot be __proto__, prototype, or constructor. Use instructions for details about what to ask.",
+        "example": {
+          "is_open": "boolean",
+          "closes_at": "string"
+        },
+        "maxProperties": 127
+      },
+      "Cancellation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Call"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "cancellation_requested": {
+                "type": "boolean",
+                "description": "Whether a cancellation request is recorded. Poll the collection until it reaches a final status."
+              }
+            },
+            "required": [
+              "cancellation_requested"
+            ]
+          }
         ]
       }
     },

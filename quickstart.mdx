@@ -22,7 +22,7 @@ Before calling, check **Settings → Calling** and **Settings → Phone numbers*
 
 ## 2. Start a collection
 
-Replace `to` with the phone number you want to call, including its country code. Put known context values in `input` and define the answers you want as a JSON Schema in `output`. Here, `input.date` tells Thred which day to ask about. `input` is optional and defaults to an empty object. The output is always an object, so no top-level `type` is needed.
+Replace `to` with the phone number you want to call, including its country code. Use `instructions` for what to ask, optional `input` for context, and `output` to name each answer and its type. Here, `input.date` tells Thred which day to ask about.
 
 <CodeGroup>
 ```bash cURL
@@ -35,12 +35,8 @@ curl --fail-with-body https://api.thred.dev/v1/collect \
     "instructions": "Ask whether the business is open on the date in input and what time it closes.",
     "input": { "date": "today" },
     "output": {
-      "properties": {
-        "is_open": { "type": "boolean" },
-        "closes_at": { "type": "string" }
-      },
-      "required": ["is_open", "closes_at"],
-      "additionalProperties": false
+      "is_open": "boolean",
+      "closes_at": "string"
     }
   }'
 ```
@@ -57,12 +53,8 @@ const response = await fetch("https://api.thred.dev/v1/collect", {
     instructions: "Ask whether the business is open on the date in input and what time it closes.",
     input: { date: "today" },
     output: {
-      properties: {
-        is_open: { type: "boolean" },
-        closes_at: { type: "string" }
-      },
-      required: ["is_open", "closes_at"],
-      "additionalProperties": false
+      is_open: "boolean",
+      closes_at: "string"
     }
   }),
 });
@@ -86,12 +78,8 @@ response = requests.post(
         "instructions": "Ask whether the business is open on the date in input and what time it closes.",
         "input": { "date": "today" },
         "output": {
-            "properties": {
-                "is_open": { "type": "boolean" },
-                "closes_at": { "type": "string" }
-            },
-            "required": ["is_open", "closes_at"],
-            "additionalProperties": False
+            "is_open": "boolean",
+            "closes_at": "string"
         }
     },
     timeout=30,
@@ -107,9 +95,7 @@ Thred accepts the request and returns `202 Accepted` with the collection's ID. I
 ```json
 {
   "id": "call_12345678-1234-1234-1234-123456789abc",
-  "status": "queued",
-  "reused": false,
-  "environment": "development"
+  "status": "queued"
 }
 ```
 
@@ -132,7 +118,7 @@ const response = await fetch(`https://api.thred.dev/v1/collect/${collectionId}`,
 
 if (!response.ok) throw new Error(await response.text());
 const collection = await response.json();
-console.log(collection.status, collection.data);
+console.log(collection.status, collection.output);
 ```
 
 ```python Python
@@ -147,26 +133,25 @@ response = requests.get(
 )
 response.raise_for_status()
 collection = response.json()
-print(collection["status"], collection["data"])
+print(collection["status"], collection["output"])
 ```
 </CodeGroup>
 
 Check every few seconds until `status` is `completed`, `incomplete`, `failed`, or `canceled`. While the status is `processing` or `awaiting_review`, the result is still being prepared.
 
-A completed response includes your answers in `data`:
+A completed response includes your answers in `output`:
 
-```json Result excerpt
+```json Result
 {
+  "id": "call_12345678-1234-1234-1234-123456789abc",
   "status": "completed",
-  "data": {
+  "output": {
     "is_open": true,
     "closes_at": "5 PM"
-  },
-  "partial_data": null,
-  "missing_fields": []
+  }
 }
 ```
 
-If the collection is `incomplete`, use the answers in `partial_data` and check `missing_fields`. A failed or canceled collection may have no result.
+`output` is `null` while answers are being prepared. If the collection is `incomplete`, `output` contains the available answers and `missing_fields` explains what is missing. A failed or canceled collection may have no result.
 
 That's the basic flow. Change `instructions`, `input`, and `output` to [build your own use case](/guides/what-you-can-build), or see [Create a collection](/api-reference/create-collection) for all available fields.

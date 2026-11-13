@@ -3,24 +3,8 @@ title: "Get search results"
 openapi: "api-reference/openapi.json GET /search/{id}/results"
 ---
 
-Read published outcomes without starting more calls. Each response contains one `results` array and the search's status and pagination fields.
+Read answers in `results[].content`, with source details and supporting `evidence`. Requested structured fields appear in `output`.
 
-```bash
-curl 'https://api.thred.dev/search/search_YOUR_SEARCH_ID/results?limit=10' \
-  -H "Authorization: Bearer $THRED_API_KEY"
-```
+Pass `next_cursor` as `cursor` to read the next page. Keep polling while `terminal` is false; finish reading when `terminal` is true and `has_more` is false. Results arrive as they become available, with their relevance `rank` preserved.
 
-Pass the returned `next_cursor` as `cursor` on the next request. `has_more` describes saved results available now. When it is false and `terminal` is false, keep polling that cursor for later outcomes. Stop when `terminal` is true and `has_more` is false.
-
-Results arrive in publication order. `rank` preserves each business's original relevance rank, so a slower call can appear on a later page without being skipped.
-
-Each business outcome includes:
-
-- `content`: the text answer, or null when no supported answer is available. A confirmed negative answer is valid content.
-- `output`: custom structured values, included only when the request supplied `output` fields.
-- `evidence`: supporting contact transcript quotes and their call timestamps.
-- `sources`: web sources used to discover and verify the business and phone number.
-- `verified_at`: when the business and phone information was verified during discovery.
-- `completed_at`: when the call was finalized, or when its outcome was published if no finalization timestamp is available.
-
-Use the result's `status`, `error` and `outcome` alongside its content to handle partial answers and unsuccessful calls. `verified_at` describes discovery verification; it is not the time of the phone answer.
+An answer can be partial or null. Check `content` and any requested `output` fields before using them.

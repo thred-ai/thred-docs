@@ -1,0 +1,21 @@
+---
+title: "Webhooks"
+description: "Receive results without polling."
+---
+
+Add an endpoint in [Dashboard](https://dashboard.thred.ai) → Settings → Webhooks. Save its ID and signing secret, then include the ID as `webhook_id` when creating a search in the same environment.
+
+| Event | Data |
+| --- | --- |
+| `search.result` | `{search_id, result}` for each published result. |
+| `search.completed` | The search object with its final `status`. |
+
+Events contain `id`, `type`, `created_at` and `data`. Use `id` to deduplicate retries. `search.completed` includes all terminal states; check `data.status`.
+
+## Verify and acknowledge
+
+`Thred-Signature` contains `t=<Unix seconds>,v1=<hex signature>`. Verify the signature using HMAC-SHA256 of `<timestamp>.<raw request body>` with the full signing secret, including its `whsec_` prefix. Compare signatures in constant time and reject stale timestamps before processing the JSON.
+
+After saving the event, return a `2xx` response within 10 seconds. Deliveries may arrive out of order and are retried up to eight total attempts. You can always [read saved results](/api-reference/search-results) through the API.
+
+Endpoints must use a public DNS hostname on HTTPS port 443 resolving to public IPv4. Redirects are not followed.

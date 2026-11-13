@@ -27,6 +27,12 @@
         ]
       },
       {
+        "group": "Guides",
+        "pages": [
+          "guides/webhooks"
+        ]
+      },
+      {
         "group": "Account and utilities",
         "pages": [
           "api-reference/authentication",
@@ -47,7 +53,7 @@
       "dark": "#1D1D1D"
     }
   },
-  "description": "Search for answers from businesses, verified by phone.",
+  "description": "Search for answers with sources and supporting evidence.",
   "navbar": {
     "links": [
       {

@@ -2,3 +2,7 @@
 title: "Get usage"
 openapi: "api-reference/openapi.json GET /v1/usage"
 ---
+
+Read daily activity for your workspace and environment. Dates use UTC; omit them for today or request up to 31 inclusive days.
+
+`searches`, `attempted_calls` and `answered_calls` use the search's creation date. Other counters use each call's creation date. These are activity counters, not billing totals.

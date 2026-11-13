@@ -1,4 +1,10 @@
 ---
-title: "Check your API key"
+title: "Authentication"
 openapi: "api-reference/openapi.json GET /v1/auth/me"
 ---
+
+A workspace manager can create a key in [Dashboard](https://dashboard.thred.ai) → Settings → API keys. Send it as `Authorization: Bearer YOUR_API_KEY`.
+
+Your key selects the workspace and environment: `thr_dev_` for Development and `thr_prod_` for Production. Both use `https://api.thred.dev`. Keep keys on your server.
+
+This endpoint returns the key's `workspace_id`, `environment` and `key_id`.

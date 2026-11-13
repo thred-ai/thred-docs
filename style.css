@@ -354,7 +354,17 @@ pre, pre code {
   }
 
   #sidebar > ul:last-child {
+    position: relative;
     padding-bottom: 64px;
+  }
+
+  #sidebar > ul:last-child::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 56px;
+    border-top: 1px solid var(--thred-panel-border);
+    pointer-events: none;
   }
 
   #sidebar::after {

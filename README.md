@@ -8,6 +8,8 @@ Keep reader-facing docs short and simple. Use one basic request-and-results flow
 
 Write for developers building apps and AI assistants. Lead with "Start building with Thred," explain that the API retrieves information over the phone, and guide readers to their first request. Frame use cases as things they can build.
 
+Use `Thred` as the site name so browser and social titles follow `Page title - Thred`, matching Exa's brand-only suffix. Do not append `Thred API`.
+
 Describe Thred as broad search. Overview copy and examples should reflect research and information needs across domains. Calling mechanics belong in the relevant API details; field names such as `business` and `selected_businesses` do not define the product's scope. Preserve actual JSON field names when documenting the contract.
 
 Choose examples where phone calls uncover current facts such as stock, openings, availability, or delivery constraints.

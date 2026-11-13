@@ -42,10 +42,10 @@
       }
     ]
   },
-  "favicon": "/images/icon.ico",
+  "favicon": "/logo/thred.svg",
   "logo": {
-    "light": "/images/logo_full_dark.png",
-    "dark": "/images/logo_full_light.png"
+    "light": "/logo/thred.svg",
+    "dark": "/logo/thred.svg"
   },
   "background": {
     "color": {

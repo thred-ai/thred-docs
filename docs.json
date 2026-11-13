@@ -54,13 +54,6 @@
     }
   },
   "description": "Build apps and AI assistants with information gathered over the phone.",
-  "seo": {
-    "metatags": {
-      "og:image": "https://www.thred.dev/images/thred-og.png",
-      "og:image:alt": "Thred logo on a dark background",
-      "twitter:image:alt": "Thred logo on a dark background"
-    }
-  },
   "navbar": {
     "links": [
       {

@@ -8,6 +8,8 @@ Keep reader-facing docs short and simple. Use one basic request-and-results flow
 
 Describe Thred as broad search. Overview copy and examples should reflect research and information needs across domains. Calling mechanics belong in the relevant API details; field names such as `business` and `selected_businesses` do not define the product's scope. Preserve actual JSON field names when documenting the contract.
 
+Choose examples where phone calls uncover current facts such as stock, openings, availability, or delivery constraints.
+
 ## Local preview
 
 With the [Mintlify CLI](https://www.mintlify.com/docs/cli/install) installed, run `mint dev` from this directory.
@@ -15,7 +17,7 @@ With the [Mintlify CLI](https://www.mintlify.com/docs/cli/install) installed, ru
 ## Content
 
 - `introduction.mdx` and `quickstart.mdx`: short overview and a three-step cURL example.
-- `guides/what-you-can-build.mdx`: use cases and available options.
+- `guides/what-you-can-build.mdx`: use cases and example queries.
 - `guides/webhooks.mdx`: event payloads, signature verification and delivery handling.
 - `api-reference/openapi.json`: the API contract.
 - `api-reference/*.mdx`: endpoint pages using [Mintlify's OpenAPI integration](https://www.mintlify.com/docs/api-playground/openapi-setup). Mintlify generates cURL, JavaScript and Python examples from OpenAPI.

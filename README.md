@@ -55,7 +55,7 @@ Use `thred-phone-data/tailwind.config.ts`, `src/app/globals.css`, `PowerWorkspac
 
 `logo/thred.svg` is the supplied `Group 289725.svg`, unchanged, used for both themes and the favicon. Preserve its original teal fill and 47:34 proportions.
 
-Social previews keep each page's title, description, and navigation group alongside a larger original Thred logo. `scripts/generate-og.cjs` renders 1200×630 cards in `images/og/` using Instrument Sans and the dashboard's dark background, then sets each navigable page's `og:image` frontmatter. Twitter inherits that image. Run `npm ci` once and `npm run og:generate` after editing titles, descriptions, API descriptions, navigation, or the logo. The font and its SIL Open Font License are in `scripts/assets/`.
+Social previews keep each page's title and description alongside a larger original Thred logo, without a category label. `scripts/generate-og.cjs` renders 1200×630 cards in `images/og/` using Instrument Sans and the dashboard's dark background, then sets each navigable page's `og:image` frontmatter. Twitter inherits that image. Run `npm ci` once and `npm run og:generate` after editing titles, descriptions, API descriptions, navigation, or the logo. The font and its SIL Open Font License are in `scripts/assets/`.
 
 Maple provides the full-height sidebar with the logo, search, and navigation inside it. Keep its native layout and a consistent 48px content inset; do not add the sidebar width to content padding. Style the active page through `aria-current="page"`. Check introduction, quickstart, and an endpoint page in both themes and at narrow widths after styling changes, including the hosted layout: the CLI preview can lag behind Mintlify's current renderer.
 

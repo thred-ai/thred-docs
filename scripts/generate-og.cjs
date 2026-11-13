@@ -49,18 +49,16 @@ async function main() {
       if (!description) throw new Error(`Missing page description: ${page}`);
       description = description.replace(/`([^`]+)`/g, '$1');
 
-      const eyebrow = await textLayer(group.group, 24, '#3AA4C1', 36);
       const title = await textLayer(metadata.title, 64, '#F5F5F5', 148, 'SemiBold');
-      const descriptionTop = 330 + title.height + 30;
-      const detail = await textLayer(description, 30, '#B5B5B5', 558 - descriptionTop);
+      const descriptionTop = 281 + title.height + 30;
+      const detail = await textLayer(description, 30, '#B5B5B5', 509 - descriptionTop);
       const output = `images/og/${page}.png`;
       await fs.mkdir(path.dirname(path.join(root, output)), { recursive: true });
       await sharp({ create: {
         width: 1200, height: 630, channels: 3, background: '#1D1D1D',
       } }).composite([
         { input: logo, left: 72, top: 64 },
-        { input: eyebrow.data, left: 72, top: 281 },
-        { input: title.data, left: 72, top: 330 },
+        { input: title.data, left: 72, top: 281 },
         { input: detail.data, left: 72, top: descriptionTop },
       ]).png({ compressionLevel: 9 }).toFile(path.join(root, output));
 

@@ -55,6 +55,8 @@ Use `thred-phone-data/tailwind.config.ts`, `src/app/globals.css`, `PowerWorkspac
 
 `logo/thred.svg` is the supplied `Group 289725.svg`, unchanged, used for both themes and the favicon. Preserve its original teal fill and 47:34 proportions.
 
+`images/thred-og.png` is the shared 1200×630 social preview: the original teal logo centered on the dashboard's dark background. Its editable source is `images/thred-og.svg`. The global `seo.metatags` in `docs.json` replaces Mintlify's generated OG image; Twitter inherits the same image. Keep the PNG and SVG in sync when changing the artwork.
+
 Maple provides the full-height sidebar with the logo, search, and navigation inside it. Keep its native layout and a consistent 48px content inset; do not add the sidebar width to content padding. Style the active page through `aria-current="page"`. Check introduction, quickstart, and an endpoint page in both themes and at narrow widths after styling changes, including the hosted layout: the CLI preview can lag behind Mintlify's current renderer.
 
 On desktop, the native theme switcher sits above Website at the bottom of the sidebar. Dashboard is hidden from navigation for now. Keep one divider below the switcher, separating it from Website, and no divider above it. Reserve its space in the sidebar footer; keep Mintlify's native mobile placement.

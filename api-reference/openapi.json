@@ -206,20 +206,6 @@
         "operationId": "createSearch",
         "summary": "Create a search",
         "description": "Start a search for answers to a query. Returns HTTP 202 with a search ID; use it to retrieve status and results.",
-        "parameters": [
-          {
-            "name": "Idempotency-Key",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 200,
-              "pattern": "^[!-~]{1,200}$"
-            },
-            "description": "Optional retry key containing 1\u2013200 printable, non-space ASCII characters. Reuse it with the same request to avoid creating another search; a different request with that key returns 409. Omitting it creates new work on each POST."
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -260,7 +246,7 @@
         },
         "responses": {
           "202": {
-            "description": "Search accepted or existing idempotent search returned.",
+            "description": "Search accepted.",
             "content": {
               "application/json": {
                 "schema": {
@@ -306,9 +292,6 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
           },
           "429": {
             "$ref": "#/components/responses/RateLimited"
@@ -833,7 +816,7 @@
           "searches": {
             "type": "integer",
             "minimum": 0,
-            "description": "Accepted searches, counted once per idempotency key and attributed to the search creation date."
+            "description": "Accepted searches, attributed to the search creation date."
           },
           "attempted_calls": {
             "type": "integer",
@@ -1583,7 +1566,7 @@
     },
     "responses": {
       "BadRequest": {
-        "description": "Invalid JSON, query, options, output fields, idempotency key, cursor, webhook, or date range. Inspect error.code and error.message.",
+        "description": "Invalid JSON, query, options, output fields, cursor, webhook, or date range. Inspect error.code and error.message.",
         "content": {
           "application/json": {
             "schema": {
@@ -1604,16 +1587,6 @@
       },
       "NotFound": {
         "description": "No matching search in this key\u2019s workspace and environment, or the endpoint does not exist.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            }
-          }
-        }
-      },
-      "Conflict": {
-        "description": "This idempotency key already belongs to a different normalized request.",
         "content": {
           "application/json": {
             "schema": {

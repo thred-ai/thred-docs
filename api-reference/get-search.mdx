@@ -10,8 +10,8 @@ curl https://api.thred.dev/search/search_YOUR_SEARCH_ID \
   -H "Authorization: Bearer $THRED_API_KEY"
 ```
 
-`requested_calls` is the original call cap. `selected_businesses` counts the businesses selected by discovery; `attempted_calls`, `answered_calls` and `published_results` track execution. Answered calls can include automated answering systems. `discovery_shortfall` reports when fewer eligible businesses were found than requested.
+`requested_calls` is the original call cap. `selected_businesses` is the API field for the number of selected sources; `attempted_calls`, `answered_calls` and `published_results` track execution. Answered calls can include automated answering systems. `discovery_shortfall` reports when fewer eligible sources were found than requested.
 
-Continue polling until `terminal` is true. Terminal statuses are `completed`, `failed`, `canceled` and `expired`. A completed search means its outcomes have settled; individual businesses can still have negative answers, partial answers or unsuccessful calls.
+Continue polling until `terminal` is true. Terminal statuses are `completed`, `failed`, `canceled` and `expired`. A completed search means its outcomes have settled; individual results can still contain negative answers, partial answers or unsuccessful calls.
 
 Read published answers through [Get search results](/api-reference/search-results), including while other calls are still running.

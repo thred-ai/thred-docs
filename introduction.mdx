@@ -1,31 +1,29 @@
 ---
-title: "Search for answers by phone"
-description: "Ask a question. Thred finds relevant businesses and calls them."
+title: "Search with Thred"
+description: "Ask a question and get answers with sources and supporting evidence."
 ---
 
-Send a query and the number of business calls to make. Thred discovers relevant businesses with verified phone numbers, generates questions, calls them, and returns concise text answers in `content` with transcript evidence.
+Thred is a search API. Submit a natural-language query and get answers with sources and supporting evidence. Use it to research questions, find information and bring search into your application.
 
 ```json
 {
-  "query": "Which dentists in Toronto accept new patients and have appointments this week?",
+  "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
   "results": 10,
   "timezone": "America/Toronto"
 }
 ```
 
-`results` is a hard cap on distinct-business call attempts. Unanswered calls and negative responses count. Successful matches are not guaranteed, and Thred reports when discovery finds fewer eligible businesses. Reading another result page never starts more calls.
-
-Each new search obtains fresh answers through its calls. Phone numbers are discovered by Thred; the request only requires `query` and `results`.
-
-Searches are asynchronous. Create a search, read progress, then retrieve paginated outcomes. Each call is finalized automatically, and its answer becomes available as soon as processing finishes.
+The request requires `query` and `results`. Searches run asynchronously: submit a query, follow progress and read answers as they become available. Results are processed automatically.
 
 | Endpoint | Purpose |
 | --- | --- |
 | `POST /search` | Start a search. |
-| `GET /search/{id}` | Read progress and call counters. |
-| `GET /search/{id}/results` | Read published business outcomes. |
+| `GET /search/{id}` | Read search progress. |
+| `GET /search/{id}/results` | Read published search results. |
 | `POST /search/{id}/cancel` | Stop remaining work and retain published answers. |
 
-Results include the business, its text answer in `content`, call status, transcript `evidence` and discovery `sources`. If no supported answer is available, `content` is null. Supply optional `output` fields when you also need structured values.
+Each result contains a text answer in `content`, source details and supporting `evidence`. If no supported answer is available, `content` is null. Supply optional `output` fields when you also need structured values.
+
+See the [API reference](/api-reference/create-search) for request limits and how `results` controls the work performed for a search.
 
 [Start with the quickstart](/quickstart).

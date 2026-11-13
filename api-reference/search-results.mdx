@@ -12,15 +12,16 @@ curl 'https://api.thred.dev/search/search_YOUR_SEARCH_ID/results?limit=10' \
 
 Pass the returned `next_cursor` as `cursor` on the next request. `has_more` describes saved results available now. When it is false and `terminal` is false, keep polling that cursor for later outcomes. Stop when `terminal` is true and `has_more` is false.
 
-Results arrive in publication order. `rank` preserves each business's original relevance rank, so a slower call can appear on a later page without being skipped.
+Results arrive in publication order. `rank` preserves each result's original relevance rank, so a result that takes longer can appear on a later page without being skipped.
 
-Each business outcome includes:
+Each search result includes:
 
 - `content`: the text answer, or null when no supported answer is available. A confirmed negative answer is valid content.
 - `output`: custom structured values, included only when the request supplied `output` fields.
+- `business`: the API object containing the source's name, URL, phone and address.
 - `evidence`: supporting contact transcript quotes and their call timestamps.
-- `sources`: web sources used to discover and verify the business and phone number.
-- `verified_at`: when the business and phone information was verified during discovery.
+- `sources`: web sources used to find and verify source identity and contact information.
+- `verified_at`: when source identity and contact information was verified during discovery.
 - `completed_at`: when the call was finalized, or when its outcome was published if no finalization timestamp is available.
 
 Use the result's `status`, `error` and `outcome` alongside its content to handle partial answers and unsuccessful calls. `verified_at` describes discovery verification; it is not the time of the phone answer.

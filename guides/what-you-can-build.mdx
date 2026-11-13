@@ -2,12 +2,13 @@
 title: "What you can build"
 ---
 
-Use Thred to discover businesses and verify information that changes faster than their websites.
+Use Thred to add search and supported answers to your application.
 
-- Find local providers accepting new customers and check appointment availability.
-- Compare current inventory, pricing, or service capabilities across relevant businesses.
-- Verify opening hours, accessibility details, or eligibility requirements by phone.
+- Build a research assistant that answers questions and shows supporting sources.
+- Help users find resources, records or programs that meet their needs.
+- Compare information across sources using consistent criteria.
+- Return structured findings for downstream workflows with optional `output` fields.
 
-Provide a query and a bounded result count. Thred generates the questions and follows up on unclear answers. It collects information; it does not book appointments, purchase products, or change accounts.
+For example, a search can ask where to access historical maps, what a community program requires, or how to use a public research facility. Describe the information you need in `query`, and use `results` to bound the search work.
 
-Responses include affirmative, negative, partial, and unsuccessful call outcomes. Use the answer in `content`, call status, and `evidence` to decide what to show in your application. A call without a supported answer has null `content`.
+Responses can include affirmative, negative and partial answers. Use `content`, status and `evidence` to decide what to show in your application. Results without a supported answer have null `content`.

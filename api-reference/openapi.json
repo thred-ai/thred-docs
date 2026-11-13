@@ -3,7 +3,7 @@
   "info": {
     "title": "Thred API",
     "version": "2.0.0",
-    "description": "Search for answers from businesses by phone. Supply a query and call budget; Thred discovers relevant businesses, generates questions, calls them, and returns paginated outcomes. API keys select workspace and environment."
+    "description": "Search for answers with source details and supporting evidence. Submit a query and retrieve results asynchronously. API keys select workspace and environment."
   },
   "servers": [
     {
@@ -31,7 +31,7 @@
     },
     {
       "name": "Search",
-      "description": "Discover businesses and collect phone-verified answers."
+      "description": "Search for answers with source details and supporting evidence."
     }
   ],
   "paths": {
@@ -154,7 +154,7 @@
         ],
         "operationId": "createSearch",
         "summary": "Create a search",
-        "description": "Discover relevant businesses and call them to answer a query. Returns HTTP 202 immediately; poll progress and results while work runs. Reuse the same Idempotency-Key and identical request for retries; a changed request with the same key returns 409. Omitting the header creates a new search on each POST. Maximum 20 unfinished searches per workspace/environment.",
+        "description": "Start a search for answers to a query. Returns HTTP 202 immediately; poll progress and results while work runs. Reuse the same Idempotency-Key and identical request for retries; a changed request with the same key returns 409. Omitting the header creates a new search on each POST. Maximum 20 unfinished searches per workspace/environment.",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -180,7 +180,7 @@
                 "textAnswers": {
                   "summary": "Text answers",
                   "value": {
-                    "query": "Which dentists in Toronto accept new patients and have appointments this week?",
+                    "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
                     "results": 2,
                     "timezone": "America/Toronto"
                   }
@@ -188,17 +188,17 @@
                 "customOutput": {
                   "summary": "Text answers with custom fields",
                   "value": {
-                    "query": "Which dentists in Toronto accept new patients and have appointments this week?",
+                    "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
                     "results": 2,
                     "timezone": "America/Toronto",
                     "output": {
-                      "accepting_new_patients": {
+                      "appointment_required": {
                         "type": "boolean",
-                        "description": "Whether the practice accepts new patients."
+                        "description": "Whether an appointment is required to access historical maps of Toronto."
                       },
-                      "appointments_this_week": {
-                        "type": "boolean",
-                        "description": "Whether an appointment is available this week in the requested timezone."
+                      "access_details": {
+                        "type": "string",
+                        "description": "Where and how historical maps of Toronto can be accessed."
                       }
                     }
                   }
@@ -217,7 +217,7 @@
                 },
                 "example": {
                   "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                  "query": "Which dentists in Toronto accept new patients and have appointments this week?",
+                  "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
                   "status": "discovering",
                   "environment": "development",
                   "identity": {
@@ -302,7 +302,7 @@
                 },
                 "example": {
                   "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                  "query": "Which dentists in Toronto accept new patients and have appointments this week?",
+                  "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
                   "status": "running",
                   "environment": "development",
                   "identity": {
@@ -390,7 +390,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Saved business outcomes.",
+            "description": "Saved search results.",
             "content": {
               "application/json": {
                 "schema": {
@@ -398,8 +398,8 @@
                 },
                 "examples": {
                   "textAnswers": {
-                    "summary": "Text answers and a canceled call",
-                    "description": "Fictional outcomes: a confirmed negative answer and a business canceled before dialing. No custom output was requested.",
+                    "summary": "Text answers and an unavailable result",
+                    "description": "Fictional results: a supported answer and a source whose call was canceled before dialing. No custom output was requested.",
                     "value": {
                       "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
                       "status": "canceled",
@@ -408,27 +408,27 @@
                           "id": "result_example_1",
                           "rank": 1,
                           "business": {
-                            "name": "Example Dental",
-                            "url": "https://example.com/dental",
+                            "name": "Example City Archives",
+                            "url": "https://example.com/city-archives",
                             "phone": "+14165550123",
                             "address": "Toronto, ON"
                           },
                           "status": "completed",
                           "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
                           "outcome": null,
-                          "content": "Example Dental accepts new patients but has no appointments available this week.",
+                          "content": "Historical maps of Toronto can be viewed in the Example City Archives reading room; no appointment is required.",
                           "evidence": [
                             {
                               "type": "call",
                               "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-                              "quote": "We accept new patients, but we have no appointments available this week.",
+                              "quote": "You can view historical maps of Toronto in our reading room without an appointment.",
                               "at_seconds": 18.2
                             }
                           ],
                           "sources": [
                             {
-                              "url": "https://example.com/dental",
-                              "title": "Example Dental contact details",
+                              "url": "https://example.com/city-archives",
+                              "title": "Example City Archives contact details",
                               "phoneExcerpt": "Call +1 416-555-0123"
                             }
                           ],
@@ -440,8 +440,8 @@
                           "id": "result_example_2",
                           "rank": 2,
                           "business": {
-                            "name": "Example Family Dental",
-                            "url": "https://example.com/family-dental",
+                            "name": "Example Reference Library",
+                            "url": "https://example.com/reference-library",
                             "phone": "+14165550124",
                             "address": "Toronto, ON"
                           },
@@ -452,8 +452,8 @@
                           "evidence": [],
                           "sources": [
                             {
-                              "url": "https://example.com/family-dental",
-                              "title": "Example Family Dental contact details",
+                              "url": "https://example.com/reference-library",
+                              "title": "Example Reference Library contact details",
                               "phoneExcerpt": "Call +1 416-555-0124"
                             }
                           ],
@@ -469,7 +469,7 @@
                   },
                   "customOutput": {
                     "summary": "Requested custom fields",
-                    "description": "The same fictional outcomes when the request includes accepting_new_patients and appointments_this_week output fields. Unavailable custom output is null.",
+                    "description": "The same fictional results when the request includes appointment_required and access_details output fields. Unavailable custom output is null.",
                     "value": {
                       "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
                       "status": "canceled",
@@ -478,27 +478,27 @@
                           "id": "result_example_1",
                           "rank": 1,
                           "business": {
-                            "name": "Example Dental",
-                            "url": "https://example.com/dental",
+                            "name": "Example City Archives",
+                            "url": "https://example.com/city-archives",
                             "phone": "+14165550123",
                             "address": "Toronto, ON"
                           },
                           "status": "completed",
                           "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
                           "outcome": null,
-                          "content": "Example Dental accepts new patients but has no appointments available this week.",
+                          "content": "Historical maps of Toronto can be viewed in the Example City Archives reading room; no appointment is required.",
                           "evidence": [
                             {
                               "type": "call",
                               "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-                              "quote": "We accept new patients, but we have no appointments available this week.",
+                              "quote": "You can view historical maps of Toronto in our reading room without an appointment.",
                               "at_seconds": 18.2
                             }
                           ],
                           "sources": [
                             {
-                              "url": "https://example.com/dental",
-                              "title": "Example Dental contact details",
+                              "url": "https://example.com/city-archives",
+                              "title": "Example City Archives contact details",
                               "phoneExcerpt": "Call +1 416-555-0123"
                             }
                           ],
@@ -506,16 +506,16 @@
                           "completed_at": "2026-11-12T15:02:10Z",
                           "error": null,
                           "output": {
-                            "accepting_new_patients": true,
-                            "appointments_this_week": false
+                            "appointment_required": false,
+                            "access_details": "View historical maps of Toronto in the archives reading room."
                           }
                         },
                         {
                           "id": "result_example_2",
                           "rank": 2,
                           "business": {
-                            "name": "Example Family Dental",
-                            "url": "https://example.com/family-dental",
+                            "name": "Example Reference Library",
+                            "url": "https://example.com/reference-library",
                             "phone": "+14165550124",
                             "address": "Toronto, ON"
                           },
@@ -526,8 +526,8 @@
                           "evidence": [],
                           "sources": [
                             {
-                              "url": "https://example.com/family-dental",
-                              "title": "Example Family Dental contact details",
+                              "url": "https://example.com/reference-library",
+                              "title": "Example Reference Library contact details",
                               "phoneExcerpt": "Call +1 416-555-0124"
                             }
                           ],
@@ -613,7 +613,7 @@
                 },
                 "example": {
                   "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                  "query": "Which dentists in Toronto accept new patients and have appointments this week?",
+                  "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
                   "status": "canceling",
                   "environment": "development",
                   "identity": {
@@ -868,7 +868,7 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 100,
-            "description": "Hard cap of distinct-business call attempts. Unanswered calls and negative answers count; successful matches are not guaranteed."
+            "description": "Hard cap of call attempts to distinct sources. Unanswered calls and negative answers count; successful matches are not guaranteed."
           },
           "identity": {
             "type": "object",
@@ -912,7 +912,7 @@
             "type": "string",
             "maxLength": 300,
             "minLength": 1,
-            "description": "Location to use when discovering relevant businesses."
+            "description": "Geographic context for the search."
           },
           "language": {
             "type": "string",
@@ -1063,7 +1063,8 @@
           },
           "selected_businesses": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Number of selected sources."
           },
           "attempted_calls": {
             "type": "integer",
@@ -1157,7 +1158,8 @@
               "url",
               "phone",
               "address"
-            ]
+            ],
+            "description": "Source metadata: name, URL, phone number, and address."
           },
           "status": {
             "type": "string",
@@ -1238,12 +1240,12 @@
           "verified_at": {
             "type": "string",
             "format": "date-time",
-            "description": "When the business identity and phone number were verified during discovery; this is not the time the answer was obtained."
+            "description": "When the source identity and phone number were verified; this is not the time the answer was obtained."
           },
           "completed_at": {
             "type": "string",
             "format": "date-time",
-            "description": "When the call result was finalized, or when the outcome was published if no finalized call exists."
+            "description": "Call finalization timestamp, or the outcome publication time when no call finalization timestamp is available."
           },
           "error": {
             "type": "string",
@@ -1255,7 +1257,7 @@
             "description": "Underlying call termination reason, when available (for example an unanswered or canceled call)."
           }
         },
-        "description": "A published business outcome. content is the concise natural-language answer, or null when no supported answer is available. output is included only when the search request explicitly supplies a custom output schema.",
+        "description": "A published search result. content is the concise natural-language answer, or null when no supported answer is available. output is included only when the search request explicitly supplies a custom output schema.",
         "required": [
           "id",
           "rank",

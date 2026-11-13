@@ -1,6 +1,6 @@
 ---
 title: "Quickstart"
-description: "Create a search and read paginated business answers."
+description: "Create a search and read answers with supporting evidence."
 ---
 
 Use `https://api.thred.dev` and set `THRED_API_KEY` to your API key. Your bearer key selects the workspace and Development or Production environment. Search routes use `/search`, without a `/v1` prefix.
@@ -9,21 +9,21 @@ Use `https://api.thred.dev` and set `THRED_API_KEY` to your API key. Your bearer
 curl https://api.thred.dev/search \
   -H "Authorization: Bearer $THRED_API_KEY" \
   -H "Content-Type: application/json" \
-  -H "Idempotency-Key: dentist-search-001" \
+  -H "Idempotency-Key: maps-quickstart-001" \
   -d '{
-    "query": "Which dentists in Toronto accept new patients?",
+    "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
     "results": 10,
     "timezone": "America/Toronto"
   }'
 ```
 
-`query` and `results` are required. `results` accepts 1–100 and caps distinct-business call attempts, including unanswered calls and negative answers. It does not guarantee that many successful matches.
+`query` and `results` are required. `results` accepts 1–100 and caps call attempts to distinct sources, including unanswered calls and negative answers. It does not guarantee that many successful matches.
 
 Keep the same idempotency key when retrying the same request. A different request with that key returns 409. A new key, or a new POST without an idempotency key, creates new work and can place more calls.
 
 Creation returns `202` with `id`, `status`, and progress counters. Read status with `GET /search/{id}` and results with `GET /search/{id}/results?limit=10`. Replace `search_...` below with the returned ID. Run this JavaScript in a server environment with `THRED_API_KEY` set.
 
-Each results response is one JSON object containing a `results` array, along with the search status and pagination fields. Each business has one entry in that array, with its text answer in `content`.
+Each results response is one JSON object containing a `results` array, along with the search status and pagination fields. Each published result has one entry in that array, with its text answer in `content`.
 
 ```javascript
 const headers = { Authorization: `Bearer ${process.env.THRED_API_KEY}` };
@@ -45,30 +45,30 @@ while (true) {
 
 `has_more` describes results saved now. Keep polling the returned cursor while `terminal` is false. Pagination uses publication order, so a slow call can appear later without being skipped; `rank` preserves its original relevance rank.
 
-Each outcome contains business identity, call status, a concise natural-language answer in `content`, discovery sources and verified contact transcript excerpts in `evidence`. `content` is a string, or null when no supported answer is available. A confirmed negative answer is a valid result. Without a custom schema, results omit `output`; Thred does not generate a set of custom fields.
+Each outcome contains source details, call status, a concise natural-language answer in `content`, discovery sources and verified contact transcript excerpts in `evidence`. `content` is a string, or null when no supported answer is available. A confirmed negative answer is a valid result. Without a custom schema, results omit `output`; Thred does not generate a set of custom fields.
 
 ## Identity and purpose
 
 ```json
 {
-  "query": "Which dentists in Toronto accept new patients?",
+  "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
   "results": 10,
   "identity": {
-    "name": "Acme",
+    "name": "Example Research Project",
     "url": "https://example.com",
-    "description": "A service that helps people find local care."
+    "description": "A research project exploring local history."
   },
   "call_reason": "customer"
 }
 ```
 
-Identity defaults to `AI assistant`. `call_reason` accepts `public` (default) or `customer`. A company can use either: “I'm an AI assistant calling on behalf of Acme. We're gathering information for the public.” Public purpose does not change result permissions.
+Identity defaults to `AI assistant`. `call_reason` accepts `public` (default) or `customer`. Use `identity` to describe who the search is on behalf of. Public purpose does not change result permissions.
 
 The API accepts optional `output` (up to 20 fields and 12,000 characters of JSON) using `{field_name: {type, description}}`. Supported types are `string`, `string[]`, `number`, `integer` and `boolean`. When supplied, each result includes the custom values in `output` alongside its text `content`. Otherwise the result contains its text answer in `content` and omits `output`. See [Create a search](/api-reference/create-search) for a structured-output example. `timezone` defaults to UTC; specify an IANA timezone for local relative dates.
 
 ## Completion, cancellation and webhooks
 
-Dialing stops after the search's 30-minute deadline. Queued work is canceled and active calls are asked to stop; completed answers remain available. Post-call extraction can finish later. `completed` means all selected outcomes have settled, not that every business matched.
+Dialing stops after the search's 30-minute deadline. Queued work is canceled and active calls are asked to stop; completed answers remain available. Post-call extraction can finish later. `completed` means all selected outcomes have settled, not that every result answered the query.
 
 Cancel with `POST /search/{id}/cancel`. Already published answers remain available.
 

@@ -1,8 +1,10 @@
 # Thred API documentation
 
-November 12 documentation revision: developers supply a query and result count to `/search`; Thred discovers relevant businesses, calls them, and returns paginated outcomes. Optional identity and public/customer purpose are request-scoped. Calls and result processing are fully automatic. This contract is implemented locally; production activation remains pending.
+November 12 documentation revision: developers supply a query and result count to `/search`; Thred returns paginated answers with sources and supporting evidence. Optional identity and public/customer purpose are request-scoped. Calls and result processing are fully automatic. This contract is implemented locally; production activation remains pending.
 
-Mintlify documentation for Thred, the data API for the phone, at `https://api.thred.dev`. The local `/search` contract discovers businesses and returns paginated phone-verified answers.
+Mintlify documentation for Thred, a search API, at `https://api.thred.dev`.
+
+Describe Thred as broad search. Overview copy and examples should reflect research and information needs across domains. Calling mechanics belong in the relevant API details; field names such as `business` and `selected_businesses` do not define the product's scope. Preserve actual JSON field names when documenting the contract.
 
 ## Local preview
 
@@ -17,7 +19,7 @@ With the [Mintlify CLI](https://www.mintlify.com/docs/cli/install) installed, ru
 - `docs.json`: navigation, Instrument Sans, and the shared Thred wordmark.
 - `style.css`: typography, light/dark colors, controls, and spacing matched to `thred-phone-data`.
 
-Document the query-driven `/search` request and its `search_` IDs. Without request `output`, each result contains a concise text answer in `content` (or null when unavailable), with no generated custom fields and no `output` property. Explicit request `output` remains supported by the API and adds the requested structured values to result `output`. The dashboard currently disables custom-schema configuration. Keep business metadata, call status, transcript `evidence`, discovery `sources`, and cursor pagination consistent with the backend contract.
+Document the query-driven `/search` request and its `search_` IDs. Without request `output`, each result contains a concise text answer in `content` (or null when unavailable), with no generated custom fields and no `output` property. Explicit request `output` remains supported by the API and adds the requested structured values to result `output`. The dashboard currently disables custom-schema configuration. Keep source metadata, call status, transcript `evidence`, discovery `sources`, and cursor pagination consistent with the backend contract.
 
 Search routes use `/search`, without a `/v1` prefix. Account and utility routes retain `/v1/auth/me`, `/v1/usage` and `/v1/health`. The new public router does not expose Collect or Crawl; the old collection pages direct readers to Search.
 

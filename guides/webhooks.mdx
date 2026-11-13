@@ -1,82 +1,21 @@
 ---
 title: "Webhooks"
-description: "Receive search results and completion events in your application."
+description: "Receive results without polling."
 ---
 
-Use webhooks to receive results as they are published. You can still retrieve the saved state through the Search API.
+Add an endpoint in [Dashboard](https://dashboard.thred.ai) → Settings → Webhooks. Save its ID and signing secret, then include the ID as `webhook_id` when creating a search in the same environment.
 
-## Configure an endpoint
+| Event | Data |
+| --- | --- |
+| `search.result` | `{search_id, result}` for each published result. |
+| `search.completed` | The search object with its final `status`. |
 
-In [Dashboard](https://dashboard.thred.ai) → Settings → Webhooks, add a public HTTPS endpoint for your selected environment. Save its endpoint ID and signing secret. A workspace manager can manage endpoints.
+Events contain `id`, `type`, `created_at` and `data`. Use `id` to deduplicate retries. `search.completed` includes all terminal states; check `data.status`.
 
-Use a public DNS hostname on HTTPS port 443 that resolves to public IPv4 addresses. Redirects are not followed.
+## Verify and acknowledge
 
-Pass the endpoint ID as `webhook_id` when creating a search:
+`Thred-Signature` contains `t=<Unix seconds>,v1=<hex signature>`. Verify the signature using HMAC-SHA256 of `<timestamp>.<raw request body>` with the full signing secret, including its `whsec_` prefix. Compare signatures in constant time and reject stale timestamps before processing the JSON.
 
-```json
-{
-  "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
-  "results": 2,
-  "webhook_id": "YOUR_WEBHOOK_ENDPOINT_ID"
-}
-```
+After saving the event, return a `2xx` response within 10 seconds. Deliveries may arrive out of order and are retried up to eight total attempts. You can always [read saved results](/api-reference/search-results) through the API.
 
-The endpoint must be enabled in the same workspace and environment as the API key.
-
-## Events
-
-Every event is a JSON object with `id`, `type`, `created_at` and `data`. `id` is stable across delivery attempts and is also sent in the `Thred-Event-Id` header.
-
-| Event | When it is sent | `data` |
-| --- | --- | --- |
-| `search.result` | A result is published. | `{search_id, result}`, where `result` has the [search-result shape](/api-reference/search-results). |
-| `search.completed` | The search reaches a terminal state. | The [search object](/api-reference/get-search), including its final status and progress counters. |
-
-`search.completed` reports terminal completion, including `completed`, `failed`, `canceled` and `expired`. Inspect `data.status` to distinguish them.
-
-## Verify the signature
-
-The `Thred-Signature` header has this format:
-
-```text
-t=<Unix timestamp in seconds>,v1=<hexadecimal HMAC-SHA256 signature>
-```
-
-Compute HMAC-SHA256 over the timestamp, a period and the exact raw request body, using the full signing secret as the key. Use the secret exactly as issued, including its `whsec_` prefix. Verify before parsing the JSON or processing the event.
-
-This Node.js example takes the unmodified body as a `Buffer` and allows five minutes of clock difference. Each delivery attempt receives a new signature timestamp.
-
-```javascript
-import { createHmac, timingSafeEqual } from "node:crypto";
-
-export function verifyWebhook(rawBody, signatureHeader, signingSecret) {
-  const parts = /^t=(\d+),v1=([a-f0-9]{64})$/.exec(signatureHeader ?? "");
-  if (!parts) throw new Error("Invalid webhook signature header");
-
-  const [, timestamp, signature] = parts;
-  if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) {
-    throw new Error("Webhook signature timestamp is outside the allowed window");
-  }
-
-  const expected = createHmac("sha256", signingSecret)
-    .update(`${timestamp}.`)
-    .update(rawBody)
-    .digest();
-  const received = Buffer.from(signature, "hex");
-  if (!timingSafeEqual(expected, received)) {
-    throw new Error("Webhook signature does not match");
-  }
-
-  return JSON.parse(rawBody.toString("utf8"));
-}
-```
-
-Pass the endpoint signing secret from your server's environment. Do not parse and reserialize the body before verification: changing whitespace or key order changes the signature.
-
-## Acknowledge and deduplicate
-
-After verifying and durably saving the event, return a `2xx` response within 10 seconds. Deduplicate by event `id` before applying the event to your application.
-
-Delivery can be retried or arrive out of order. There are at most eight attempts; normal retry delays are 1 minute, 5 minutes, 15 minutes, 1 hour, 4 hours, 12 hours and 24 hours. A retry keeps the event ID and payload.
-
-The API remains the source of saved state. Fetch [the search](/api-reference/get-search) or [its results](/api-reference/search-results) if an event is missed or arrives out of order.
+Endpoints must use a public DNS hostname on HTTPS port 443 resolving to public IPv4. Redirects are not followed.

@@ -4,6 +4,8 @@ November 12 documentation revision: developers supply a query and result count t
 
 Mintlify documentation for Thred, a search API, at `https://api.thred.dev`.
 
+Keep reader-facing docs short and simple. Use one basic request-and-results flow, and let the generated API reference carry field details and language examples. Avoid duplicate examples and long implementation tutorials.
+
 Describe Thred as broad search. Overview copy and examples should reflect research and information needs across domains. Calling mechanics belong in the relevant API details; field names such as `business` and `selected_businesses` do not define the product's scope. Preserve actual JSON field names when documenting the contract.
 
 ## Local preview
@@ -12,11 +14,11 @@ With the [Mintlify CLI](https://www.mintlify.com/docs/cli/install) installed, ru
 
 ## Content
 
-- `introduction.mdx` and `quickstart.mdx`: overview, request example and result polling.
+- `introduction.mdx` and `quickstart.mdx`: short overview and a three-step cURL example.
 - `guides/what-you-can-build.mdx`: use cases and available options.
 - `guides/webhooks.mdx`: event payloads, signature verification and delivery handling.
 - `api-reference/openapi.json`: the API contract.
-- `api-reference/*.mdx`: endpoint pages using [Mintlify's OpenAPI integration](https://www.mintlify.com/docs/api-playground/openapi-setup), with cURL, JavaScript and Python search examples.
+- `api-reference/*.mdx`: endpoint pages using [Mintlify's OpenAPI integration](https://www.mintlify.com/docs/api-playground/openapi-setup). Mintlify generates cURL, JavaScript and Python examples from OpenAPI.
 - `docs.json`: navigation, Instrument Sans, and the shared Thred wordmark.
 - `style.css`: typography, light/dark colors, controls, and spacing matched to `thred-phone-data`.
 

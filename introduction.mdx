@@ -3,7 +3,7 @@ title: "Search with Thred"
 description: "Ask a question and get answers with sources and supporting evidence."
 ---
 
-Thred is a search API. Submit a natural-language query and get answers with sources and supporting evidence. Use it to research questions, find information and bring search into your application.
+Thred is a search API. Send a natural-language query and read the answers as they become available.
 
 ```json
 {
@@ -12,17 +12,6 @@ Thred is a search API. Submit a natural-language query and get answers with sour
 }
 ```
 
-The request requires `query` and `results`. Searches run asynchronously: submit a query, follow progress and read answers as they become available. Results are processed automatically.
+Results include text answers, sources and supporting evidence. Add optional `output` fields when you need structured data.
 
-| Endpoint | Purpose |
-| --- | --- |
-| `POST /search` | Start a search. |
-| `GET /search/{id}` | Read search progress. |
-| `GET /search/{id}/results` | Read published search results. |
-| `POST /search/{id}/cancel` | Stop remaining work and retain published answers. |
-
-Each result contains a text answer in `content`, source details and supporting `evidence`. If no supported answer is available, `content` is null. Supply optional `output` fields when you also need structured values.
-
-See the [API reference](/api-reference/create-search) for request limits and how `results` controls the work performed for a search.
-
-[Start with the quickstart](/quickstart).
+[Get started](/quickstart).

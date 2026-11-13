@@ -3,21 +3,8 @@ title: "Authentication"
 openapi: "api-reference/openapi.json GET /v1/auth/me"
 ---
 
-Authenticate requests with `Authorization: Bearer YOUR_API_KEY`. Your key selects the workspace and environment for every request.
+A workspace manager can create a key in [Dashboard](https://dashboard.thred.ai) → Settings → API keys. Send it as `Authorization: Bearer YOUR_API_KEY`.
 
-## Create a key
+Your key selects the workspace and environment: `thr_dev_` for Development and `thr_prod_` for Production. Both use `https://api.thred.dev`. Keep keys on your server.
 
-In the [Dashboard](https://dashboard.thred.ai), select your workspace and environment, open **Settings → API keys**, and choose **Create key**. A workspace manager can create and manage keys.
-
-Development keys start with `thr_dev_`; Production keys start with `thr_prod_`. Use the same API origin, `https://api.thred.dev`, for both environments.
-
-```bash
-export THRED_API_KEY="YOUR_API_KEY"
-
-curl https://api.thred.dev/v1/auth/me \
-  -H "Authorization: Bearer $THRED_API_KEY"
-```
-
-A successful response returns `workspace_id`, `environment` and `key_id`. Use it to confirm the key's scope before starting a search. Search routes use `/search`; account and utility routes keep their `/v1` prefix.
-
-Keep the key in server-side environment variables. Both environments can perform real searches when enabled. A missing, invalid or revoked key returns HTTP `401`.
+This endpoint returns the key's `workspace_id`, `environment` and `key_id`.

@@ -1,79 +1,45 @@
 ---
 title: "Quickstart"
-description: "Create a search and read answers with supporting evidence."
+description: "Create a search and read its results."
 ---
 
-Create a search, wait for its results and read the answers. This example uses Node.js with built-in `fetch`.
+## 1. Get your API key
 
-## Set your API key
-
-Create a key in [Dashboard](https://dashboard.thred.ai) → Settings → API keys for your selected environment, then set it in your terminal:
+Create a key in [Dashboard](https://dashboard.thred.ai) → Settings → API keys, then set it in your terminal:
 
 ```bash
 export THRED_API_KEY="YOUR_API_KEY"
 ```
 
-Your key selects the workspace and environment. See [Authentication](/api-reference/authentication) for setup and key verification.
-
-## Create a search and read its answers
-
-Save the following as `search.mjs`. It submits a query, follows the returned search ID and prints each answer as it becomes available.
-
-```javascript
-const apiKey = process.env.THRED_API_KEY;
-if (!apiKey) throw new Error("Set THRED_API_KEY before running this example.");
-const headers = { Authorization: `Bearer ${apiKey}` };
-
-async function readJson(response) {
-  if (!response.ok) throw new Error(await response.text());
-  return response.json();
-}
-
-const search = await readJson(await fetch("https://api.thred.dev/search", {
-  method: "POST",
-  headers: { ...headers, "Content-Type": "application/json" },
-  body: JSON.stringify({
-    query: "Where can I access historical maps of Toronto, and do I need an appointment?",
-    results: 2,
-  }),
-}));
-
-let cursor;
-while (true) {
-  const url = new URL(`https://api.thred.dev/search/${search.id}/results`);
-  url.searchParams.set("limit", "10");
-  if (cursor) url.searchParams.set("cursor", cursor);
-  const page = await readJson(await fetch(url, { headers }));
-  for (const result of page.results) {
-    if (result.content !== null) console.log(result.content);
-  }
-  cursor = page.next_cursor;
-  if (page.terminal && !page.has_more) {
-    console.log(`Search status: ${page.status}`);
-    break;
-  }
-  if (!page.has_more) await new Promise(resolve => setTimeout(resolve, 3000));
-}
-```
-
-Run it:
+## 2. Create a search
 
 ```bash
-node search.mjs
+curl https://api.thred.dev/search \
+  -H "Authorization: Bearer $THRED_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
+    "results": 2
+  }'
 ```
 
-Creation returns HTTP `202`. The script reads paginated results until the search finishes and every available page has been read. A completed search can produce answers like these fictional examples:
+The response returns a search `id`. Copy it into `THRED_SEARCH_ID` below.
 
-```text
-Historical maps of Toronto can be viewed in the Example City Archives reading room; no appointment is required.
-Historical maps of Toronto are available in the Example Reference Library special collections room; an appointment is required.
-Search status: completed
+## 3. Read the results
+
+```bash
+export THRED_SEARCH_ID="SEARCH_ID_FROM_CREATE_RESPONSE"
+
+curl "https://api.thred.dev/search/$THRED_SEARCH_ID/results" \
+  -H "Authorization: Bearer $THRED_API_KEY"
 ```
 
-Each result also includes source details, relevance `rank` and supporting `evidence`. See [Get search results](/api-reference/search-results) for the full response.
+Each result's `content` contains its answer, for example:
 
-## Next steps
+> Historical maps of Toronto can be viewed in the Example City Archives reading room; no appointment is required.
 
-- Use cURL or Python, add structured `output` fields, or configure search options in [Create a search](/api-reference/create-search).
-- Read [request limits and retry behavior](/api-reference/create-search#limits-and-retries) before adding automatic retries.
-- Receive results through [Webhooks](/guides/webhooks) instead of polling.
+This is a fictional example. Results also include source details and supporting evidence.
+
+Searches run asynchronously. Repeat the GET while `terminal` is false. Pass `next_cursor` as `cursor` to continue from the last page, and read remaining pages while `has_more` is true.
+
+See [Create a search](/api-reference/create-search) for options and [Get search results](/api-reference/search-results) for the response fields.

@@ -3,10 +3,4 @@ title: "Check API health"
 openapi: "api-reference/openapi.json GET /v1/health"
 ---
 
-Check that the API service responds. Authentication is not required.
-
-```bash
-curl https://api.thred.dev/v1/health
-```
-
-A successful response has `status: "ok"`. Its `environment` describes the API deployment; authenticated requests use the environment selected by your API key.
+Check that the API responds. No API key is required. A successful response has `status: "ok"`.

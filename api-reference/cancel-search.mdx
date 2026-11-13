@@ -3,13 +3,6 @@ title: "Cancel a search"
 openapi: "api-reference/openapi.json POST /search/{id}/cancel"
 ---
 
-Request cancellation when you want to stop a search. Use the ID returned at creation as `THRED_SEARCH_ID`. No request body is required.
+Stop remaining work for a search. No request body is required, and published results remain available.
 
-```bash
-curl -X POST "https://api.thred.dev/search/$THRED_SEARCH_ID/cancel" \
-  -H "Authorization: Bearer $THRED_API_KEY"
-```
-
-The endpoint returns HTTP `202` with the current search state. The example shows `canceling` because the request was accepted and remaining work is stopping. Repeating cancellation is safe, including after the search has finished.
-
-Published answers remain available. Continue reading the search until `terminal` is true, and retrieve any remaining result pages. A canceled search has status `canceled`; a search that already completed keeps its terminal status.
+The API returns HTTP `202`. Poll the search until `terminal` is true. Repeating cancellation is safe.

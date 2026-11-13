@@ -28,11 +28,10 @@
 }
 
 html, body {
-  background: var(--thred-muted-surface);
+  background: var(--thred-surface);
 }
 
 body {
-  isolation: isolate;
   color: var(--thred-text);
   font-size: 14px;
   letter-spacing: calc(0.6px - 0.05em);
@@ -44,7 +43,7 @@ button, input, select, textarea {
 }
 
 #navbar, #navbar-transition {
-  background: var(--thred-muted-surface);
+  background: var(--thred-surface);
   border-color: transparent;
 }
 
@@ -53,25 +52,13 @@ button, input, select, textarea {
   border-color: var(--thred-panel-border);
 }
 
-/* PowerWorkspace's inset surface, border and shadow around the docs layout. */
-#content-container {
-  position: relative;
-  min-height: calc(100vh - 76px);
-  margin-bottom: 12px;
-}
-
 #background-color {
-  position: absolute;
-  inset: 12px -16px 0;
-  border: 1px solid var(--thred-panel-border);
-  border-radius: 6px;
   background: var(--thred-surface);
-  box-shadow: var(--thred-workspace-shadow);
 }
 
 img.nav-logo {
-  height: 40px !important;
-  width: 40px !important;
+  height: 34px !important;
+  width: 47px !important;
   object-fit: contain;
 }
 
@@ -336,10 +323,16 @@ pre, pre code {
 }
 
 @media (min-width: 1024px) {
+  /* Keep the product's inset panel treatment on navigation only. */
   #sidebar {
     top: 76px !important;
     bottom: 12px;
-    width: var(--sidebar-width);
+    width: calc(var(--sidebar-width) + 12px);
+    margin-left: -12px;
+    border: 1px solid var(--thred-panel-border);
+    border-radius: 6px;
+    background: var(--thred-surface);
+    box-shadow: var(--thred-workspace-shadow);
   }
 
   #sidebar-content > div > .sticky {
@@ -347,7 +340,8 @@ pre, pre code {
   }
 
   #sidebar-content {
-    padding-right: 12px;
+    padding-inline: 12px;
+    border-radius: inherit;
   }
 
   #content-area {
@@ -361,15 +355,6 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 }
 
 @media (max-width: 1023px) {
-  #content-container {
-    min-height: calc(100vh - 8px);
-    margin-bottom: 8px;
-  }
-
-  #background-color {
-    inset: 128px -8px 0;
-  }
-
   #content-area {
     padding-inline: 12px;
   }

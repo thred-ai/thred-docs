@@ -57,8 +57,8 @@ button, input, select, textarea {
 }
 
 img.nav-logo {
-  height: 34px !important;
-  width: 47px !important;
+  height: 48px !important;
+  width: auto !important;
   object-fit: contain;
 }
 
@@ -143,13 +143,19 @@ img.nav-logo {
   border-radius: 6px;
 }
 
+#navigation-items .sidebar-group a {
+  margin-left: 0;
+  width: 100%;
+  border-left: 0;
+}
+
 #navigation-items a:hover {
   color: var(--thred-text);
   background: var(--thred-hover);
 }
 
-/* The installed Mint theme marks the current link with this color utility. */
-#navigation-items .sidebar-group a[class~="bg-primary/10"] {
+/* Keep the current page styled like the dashboard's selected navigation. */
+#navigation-items .sidebar-group a[aria-current="page"] {
   color: var(--thred-text);
   background: var(--thred-muted-surface);
   font-weight: 500;
@@ -322,25 +328,23 @@ pre, pre code {
   border-radius: 6px;
 }
 
+#pagination {
+  padding: 0;
+  border: 1px solid var(--thred-border);
+  border-radius: 6px;
+  background: var(--thred-surface);
+}
+
+#pagination a > div {
+  border-radius: 6px;
+}
+
 @media (min-width: 1024px) {
-  /* Reserve the sidebar once; every page shares the same content origin. */
-  :has(> #sidebar) {
-    display: flex;
-  }
-
+  /* Maple owns the full-height sidebar, including its logo and search. */
   #sidebar {
-    position: sticky;
-    top: 64px !important;
-    bottom: auto;
-    align-self: flex-start;
-    flex: 0 0 var(--sidebar-width);
-    width: var(--sidebar-width);
-    height: calc(100dvh - 64px);
-    margin: 0;
-    border-right: 1px solid var(--thred-panel-border);
+    border-right-color: var(--thred-panel-border);
   }
 
-  /* Depth only at the shared edge, without enclosing either column. */
   #sidebar::after {
     content: "";
     position: absolute;
@@ -350,31 +354,13 @@ pre, pre code {
     pointer-events: none;
   }
 
-  #sidebar-content,
-  #sidebar-content [data-component-part="scroll-area-viewport"] {
-    padding: 0;
-  }
-
-  #sidebar #navigation-items {
-    padding: 0 12px 40px 0;
-  }
-
   #content-container {
-    flex: 1;
-    min-width: 0;
-  }
-
-  #content-container > div:has(> #content-area) {
-    justify-content: flex-end;
+    padding-left: 48px;
   }
 
   #content-area {
-    flex: 1 1 0%;
     min-width: 0;
-    width: auto;
-    max-width: calc(var(--content-width) + 3rem);
-    margin-inline: 0;
-    padding-inline: 48px 0;
+    margin-inline: 0 auto;
   }
 }
 

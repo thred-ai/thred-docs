@@ -53,4 +53,4 @@ Use `thred-phone-data/tailwind.config.ts`, `src/app/globals.css`, `PowerWorkspac
 
 `logo/thred.svg` is the supplied `Group 289725.svg`, unchanged, used for both themes and the favicon. Preserve its original teal fill and 47:34 proportions.
 
-Custom CSS uses Mintlify's documented IDs and component hooks. Desktop layout reserves the sidebar once and uses a consistent 48px content inset; do not add the sidebar width to content padding. The Mint theme exposes the active navigation state through `bg-primary/10`. Check introduction, quickstart, and an endpoint page in both themes and at narrow widths after styling changes, including the hosted layout: the CLI preview can lag behind Mintlify's current renderer.
+Maple provides the full-height sidebar with the logo, search, and navigation inside it. Keep its native layout and a consistent 48px content inset; do not add the sidebar width to content padding. Style the active page through `aria-current="page"`. Check introduction, quickstart, and an endpoint page in both themes and at narrow widths after styling changes, including the hosted layout: the CLI preview can lag behind Mintlify's current renderer.

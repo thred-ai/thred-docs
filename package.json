@@ -1,0 +1,11 @@
+{
+  "name": "thred-docs",
+  "private": true,
+  "scripts": {
+    "og:generate": "node scripts/generate-og.cjs"
+  },
+  "devDependencies": {
+    "sharp": "0.34.5",
+    "yaml": "2.8.1"
+  }
+}

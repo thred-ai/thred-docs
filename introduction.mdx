@@ -1,13 +1,9 @@
 ---
 title: "Search with Thred"
-description: "Find answers that aren't readily available online."
+description: "Ask a question and get answers with sources and supporting evidence."
 ---
 
-Thred is a search API that retrieves information over the phone. Ask a question in plain language, and Thred finds relevant sources and calls them to get the information you need.
-
-Use it to check current stock, confirm availability, or get details that aren't published online.
-
-Send a query to `/search`. The `results` field limits how many sources Thred attempts to contact:
+Thred is a search API that retrieves information over the phone. Send a natural-language query, and Thred calls relevant sources to get the answers.
 
 ```json
 {
@@ -16,6 +12,6 @@ Send a query to `/search`. The `results` field limits how many sources Thred att
 }
 ```
 
-Searches run in the background. Read answers as they become available, with source details and supporting evidence from the conversations. Add optional `output` fields when you need structured data.
+Read answers as they become available, with sources and supporting evidence from the calls. Add optional `output` fields when you need structured data.
 
-[Create your first search](/quickstart).
+[Get started](/quickstart).

@@ -34,6 +34,8 @@ Search routes use `/search`, without a `/v1` prefix. Account and utility routes 
 
 Primary examples must show the normal successful flow: accepted creation, completed search and populated results. Keep cancellation examples on the cancellation endpoint. Use one consistent request and result count across the quickstart and reference, with matching IDs, counters, timestamps, evidence and output values. Inspect the rendered example selected by default as well as the source schema; structural validation cannot establish whether an example is useful.
 
+Hide `required` badges on response fields through `style.css`. Preserve OpenAPI's response presence guarantees and keep required badges visible on request fields.
+
 ## Static validation
 
 ```bash

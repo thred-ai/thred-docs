@@ -130,6 +130,11 @@ img.nav-logo {
   font-weight: 600;
 }
 
+/* Response presence guarantees stay in OpenAPI, not request-style badges. */
+.param-head[id^="response-"] [data-component-part="field-required-pill"] {
+  display: none;
+}
+
 :is(#content, #api-playground-2-operation-page) a:not(.card):not([aria-label]) {
   color: var(--thred-link);
   text-decoration-thickness: 1px;

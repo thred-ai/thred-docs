@@ -1,0 +1,13 @@
+---
+title: "Cancel a search"
+openapi: "api-reference/openapi.json POST /search/{id}/cancel"
+---
+
+Request cancellation of the remaining search work. No request body is required.
+
+```bash
+curl -X POST https://api.thred.dev/search/search_YOUR_SEARCH_ID/cancel \
+  -H "Authorization: Bearer $THRED_API_KEY"
+```
+
+Published answers remain available. Cancellation can take time while active calls stop and outcomes finish processing; continue reading progress until `terminal` is true, and retrieve any remaining result pages.

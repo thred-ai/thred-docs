@@ -1,8 +1,5 @@
 ---
-title: "Get a collection"
-openapi: "api-reference/openapi.json GET /v1/collect/{id}"
+title: "Search API"
 ---
 
-Read answers from `output`, which is `null` until results are available. For an `incomplete` collection, `output` contains the answers collected so far and `missing_fields` explains what is missing. An `error` is included only when one exists.
-
-Webhook events use the same collection shape inside their `data` envelope.
+Thred now starts work through [Search](/api-reference/create-search). Supply a query and result count; Thred discovers the businesses and their numbers.

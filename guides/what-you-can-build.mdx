@@ -1,104 +1,13 @@
 ---
 title: "What you can build"
-description: "Turn questions that require a phone call into structured answers."
 ---
 
-Use Collect when you already have a source's phone number. Use `instructions` for what to ask, `input` for known context values, and `output` for the answer names and types you need. Your application gets structured JSON after Thred collects the answers.
+Use Thred to discover businesses and verify information that changes faster than their websites.
 
-## Information you can collect
+- Find local providers accepting new customers and check appointment availability.
+- Compare current inventory, pricing, or service capabilities across relevant businesses.
+- Verify opening hours, accessibility details, or eligibility requirements by phone.
 
-| Use case | What to ask |
-| --- | --- |
-| Business hours | Confirm opening hours, holiday hours, or the latest pickup time. |
-| Product availability | Ask whether a specific item is in stock and what it costs. |
-| Appointment information | Ask about availability, accepted appointment types, or what a customer needs to bring. |
-| Department questions | Reach the right department or extension and ask about its services. |
+Provide a query and a bounded result count. Thred generates the questions and follows up on unclear answers. It collects information; it does not book appointments, purchase products, or change accounts.
 
-## Example: check inventory
-
-Set your API key using the [quickstart](/quickstart), then [create a collection](/api-reference/create-collection). Replace `to` with the number you want to call. The `input` object supplies the product and currency for these instructions:
-
-<CodeGroup>
-```bash cURL
-curl --fail-with-body https://api.thred.dev/v1/collect \
-  --request POST \
-  --header "Authorization: Bearer $THRED_API_KEY" \
-  --header "Content-Type: application/json" \
-  --data '{
-    "to": "+14155550123",
-    "instructions": "Ask whether the product in input is in stock and ask for its price in the requested currency.",
-    "input": { "product": "6-foot USB-C charging cable", "currency": "USD" },
-    "output": {
-      "in_stock": "boolean",
-      "price_usd": "number"
-    }
-  }'
-```
-
-```javascript JavaScript
-const response = await fetch("https://api.thred.dev/v1/collect", {
-  method: "POST",
-  headers: {
-    Authorization: `Bearer ${process.env.THRED_API_KEY}`,
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    to: "+14155550123",
-    instructions: "Ask whether the product in input is in stock and ask for its price in the requested currency.",
-    input: { product: "6-foot USB-C charging cable", currency: "USD" },
-    output: {
-      in_stock: "boolean",
-      price_usd: "number",
-    },
-  }),
-});
-
-if (!response.ok) throw new Error(await response.text());
-const collection = await response.json();
-console.log(collection.id);
-```
-
-```python Python
-import os
-import requests
-
-response = requests.post(
-    "https://api.thred.dev/v1/collect",
-    headers={
-        "Authorization": f"Bearer {os.environ['THRED_API_KEY']}",
-    },
-    json={
-        "to": "+14155550123",
-        "instructions": "Ask whether the product in input is in stock and ask for its price in the requested currency.",
-        "input": { "product": "6-foot USB-C charging cable", "currency": "USD" },
-        "output": {
-            "in_stock": "boolean",
-            "price_usd": "number",
-        },
-    },
-    timeout=30,
-)
-response.raise_for_status()
-print(response.json()["id"])
-```
-</CodeGroup>
-
-Thred returns the collection's ID immediately. [Retrieve the collection](/api-reference/get-collection) to check its status. Read the answers from `output`. If the result is `incomplete`, `output` contains the available answers and `missing_fields` explains what is missing.
-
-## Shape the answers
-
-Map each field name to one of four types: `string`, `number`, `integer`, or `boolean`. Use clear names and put any details about what to ask in `instructions`.
-
-All declared answers are expected. You only need to provide the field names and types shown above.
-
-## Add context and routing
-
-| Option | Use it to |
-| --- | --- |
-| `input` | Pass a JSON object of context values, such as a product name or reference number. Optional; defaults to `{}`. |
-| `navigation` | Specify a contact name, department, extension, or language. |
-| `max_duration_seconds` | Set how long the call can run within your workspace's limit. |
-| `metadata` | Attach your own identifiers to the stored collection request. |
-| `webhook_id` | Receive a signed completion event at an endpoint configured in the dashboard. |
-
-Start with the [quickstart](/quickstart), then add these options as your workflow needs them.
+Responses include affirmative, negative, partial, and unsuccessful call outcomes. Use the answer in `content`, call status, and `evidence` to decide what to show in your application. A call without a supported answer has null `content`.

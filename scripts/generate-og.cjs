@@ -11,19 +11,31 @@ const escape = (text) => text.replace(/[&<>"']/g, (char) => ({
 })[char]);
 
 async function textLayer(text, size, color, maxHeight, weight = '') {
-  const words = text.replace(/\s+/g, ' ').trim().split(' ');
-  for (let count = words.length; count > 0; count--) {
-    const content = words.slice(0, count).join(' ') + (count < words.length ? '…' : '');
+  const original = text.replace(/\s+/g, ' ').trim();
+  let content = original;
+  const maxWidth = 1056;
+  while (content) {
+    const display = content + (content !== original ? '…' : '');
     const image = sharp({ text: {
-      text: `<span foreground="${color}">${escape(content)}</span>`,
+      text: `<span foreground="${color}">${escape(display)}</span>`,
       font: `Instrument Sans ${weight} ${size}`,
       fontfile,
-      width: 1056,
+      width: maxWidth,
+      wrap: 'word-char',
       rgba: true,
       spacing: 8,
     } });
     const { data, info } = await image.png().toBuffer({ resolveWithObject: true });
-    if (info.height <= maxHeight) return { data, height: info.height };
+    if (info.width <= maxWidth && info.height <= maxHeight) {
+      return { data, height: info.height };
+    }
+    const lastSpace = content.lastIndexOf(' ');
+    if (lastSpace > 0) {
+      content = content.slice(0, lastSpace);
+    } else {
+      const graphemes = [...new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(content)];
+      content = graphemes.slice(0, -1).map(({ segment }) => segment).join('');
+    }
   }
   throw new Error(`Text does not fit: ${text}`);
 }

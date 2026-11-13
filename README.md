@@ -59,6 +59,8 @@ Social previews keep each page's title and description alongside a larger origin
 
 Center each card's content vertically using its rendered height. Keep 64px between the logo and title and 24px between the title and description, preserving the shared left alignment.
 
+Titles and descriptions wrap within 1056px and truncate with an ellipsis to fit their measured height limits. Truncation prefers word boundaries and handles unbroken text without splitting Unicode characters or overflowing horizontally.
+
 Maple provides the full-height sidebar with the logo, search, and navigation inside it. Keep its native layout and a consistent 48px content inset; do not add the sidebar width to content padding. Style the active page through `aria-current="page"`. Check introduction, quickstart, and an endpoint page in both themes and at narrow widths after styling changes, including the hosted layout: the CLI preview can lag behind Mintlify's current renderer.
 
 On desktop, the native theme switcher sits above Website at the bottom of the sidebar. Dashboard is hidden from navigation for now. Keep one divider below the switcher, separating it from Website, and no divider above it. Reserve its space in the sidebar footer; keep Mintlify's native mobile placement.

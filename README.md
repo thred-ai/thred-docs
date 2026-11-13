@@ -49,8 +49,8 @@ Check `../thred-phone-data/deployment/STATUS.md` before advertising local-only w
 
 ## Styling
 
-Use `thred-phone-data/tailwind.config.ts`, `src/app/globals.css`, `PowerWorkspace`, and the Settings UI as the styling source: Instrument Sans, slate text, neutral light/dark surfaces, teal accents, 6px controls, and a 224px navigation column. Apply the bordered, shadowed panel to the sidebar; keep the main content flat. Body text is 14px with 24px line height; code uses a system monospace face at 12px. Keep code formatting separate from prose.
+Use `thred-phone-data/tailwind.config.ts`, `src/app/globals.css`, `PowerWorkspace`, and the Settings UI as the styling source: Instrument Sans, slate text, neutral light/dark surfaces, teal accents, 6px controls, and a 224px navigation column. Keep both columns flat, with a subtle shadow only along their shared divider. Body text is 14px with 24px line height; code uses a system monospace face at 12px. Keep code formatting separate from prose.
 
 `logo/thred.svg` is the supplied `Group 289725.svg`, unchanged, used for both themes and the favicon. Preserve its original teal fill and 47:34 proportions.
 
-Custom CSS uses Mintlify's documented IDs and component hooks. The installed Mint theme exposes the active navigation state through `bg-primary/10`; verify that selector and desktop sidebar/content alignment when upgrading Mintlify. Check introduction, quickstart, and an endpoint page in both themes and at narrow widths after styling changes.
+Custom CSS uses Mintlify's documented IDs and component hooks. Desktop layout reserves the sidebar once and uses a consistent 48px content inset; do not add the sidebar width to content padding. The Mint theme exposes the active navigation state through `bg-primary/10`. Check introduction, quickstart, and an endpoint page in both themes and at narrow widths after styling changes, including the hosted layout: the CLI preview can lag behind Mintlify's current renderer.

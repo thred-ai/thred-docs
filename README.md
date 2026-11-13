@@ -21,7 +21,7 @@ With the [Mintlify CLI](https://www.mintlify.com/docs/cli/install) installed, ru
 - `guides/webhooks.mdx`: event payloads, signature verification and delivery handling.
 - `api-reference/openapi.json`: the API contract.
 - `api-reference/*.mdx`: endpoint pages using [Mintlify's OpenAPI integration](https://www.mintlify.com/docs/api-playground/openapi-setup). Mintlify generates cURL, JavaScript and Python examples from OpenAPI.
-- `docs.json`: navigation, Instrument Sans, and the shared Thred wordmark.
+- `docs.json`: navigation, Instrument Sans, and the shared Thred SVG logo and favicon.
 - `style.css`: typography, light/dark colors, controls, and spacing matched to `thred-phone-data`.
 
 Document the query-driven `/search` request and its `search_` IDs. Without request `output`, each result contains a concise text answer in `content` (or null when unavailable), with no generated custom fields and no `output` property. Explicit request `output` remains supported by the API and adds the requested structured values to result `output`. The dashboard currently disables custom-schema configuration. Keep source metadata, call status, transcript `evidence`, discovery `sources`, and cursor pagination consistent with the backend contract.
@@ -49,6 +49,8 @@ Check `../thred-phone-data/deployment/STATUS.md` before advertising local-only w
 
 ## Styling
 
-Use `thred-phone-data/tailwind.config.ts`, `src/app/globals.css`, and the Settings UI as the styling source: Instrument Sans, slate text, neutral light/dark surfaces, teal accents, 6px controls, and a 224px navigation column. Body text is 14px with 24px line height; code uses a system monospace face at 13px. Keep code formatting separate from prose.
+Use `thred-phone-data/tailwind.config.ts`, `src/app/globals.css`, `PowerWorkspace`, and the Settings UI as the styling source: Instrument Sans, slate text, neutral light/dark surfaces, teal accents, 6px controls, and a 224px navigation column. Match the dashboard's muted shell and inset content panel. Body text is 14px with 24px line height; code uses a system monospace face at 12px. Keep code formatting separate from prose.
+
+`logo/thred.svg` is an unchanged copy of the dashboard's `public/thred-sidebar.svg`, used for both themes and the favicon. Preserve its original teal fill and proportions.
 
 Custom CSS uses Mintlify's documented IDs and component hooks. The installed Mint theme exposes the active navigation state through `bg-primary/10`; verify that selector and desktop sidebar/content alignment when upgrading Mintlify. Check introduction, quickstart, and an endpoint page in both themes and at narrow widths after styling changes.

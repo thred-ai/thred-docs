@@ -18,8 +18,9 @@ curl https://api.thred.dev/search \
   -H "Authorization: Bearer $THRED_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
-    "results": 2
+    "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
+    "results": 2,
+    "timezone": "America/Chicago"
   }'
 ```
 
@@ -36,7 +37,7 @@ curl "https://api.thred.dev/search/$THRED_SEARCH_ID/results" \
 
 Each result's `content` contains its answer, for example:
 
-> Historical maps of Toronto can be viewed in the Example City Archives reading room; no appointment is required.
+> Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.
 
 This is a fictional example. Results also include source details and supporting evidence.
 

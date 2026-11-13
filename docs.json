@@ -78,7 +78,7 @@
         "javascript",
         "python"
       ],
-      "defaults": "required"
+      "defaults": "all"
     }
   },
   "fonts": {

@@ -231,23 +231,25 @@
                 "Text answers": {
                   "summary": "Search for answers",
                   "value": {
-                    "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
-                    "results": 2
+                    "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
+                    "results": 2,
+                    "timezone": "America/Chicago"
                   }
                 },
                 "Structured answers": {
                   "summary": "Request structured fields",
                   "value": {
-                    "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
+                    "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
                     "results": 2,
+                    "timezone": "America/Chicago",
                     "output": {
-                      "appointment_required": {
+                      "in_stock": {
                         "type": "boolean",
-                        "description": "Whether an appointment is required to access historical maps of Toronto."
+                        "description": "Whether the Nintendo Switch 2 is currently in stock."
                       },
-                      "access_details": {
+                      "pickup_details": {
                         "type": "string",
-                        "description": "Where and how historical maps of Toronto can be accessed."
+                        "description": "Same-day pickup availability and the latest local pickup time."
                       }
                     }
                   }
@@ -266,7 +268,7 @@
                 },
                 "example": {
                   "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                  "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
+                  "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
                   "status": "discovering",
                   "environment": "development",
                   "identity": {
@@ -353,7 +355,7 @@
                 },
                 "example": {
                   "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                  "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
+                  "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
                   "status": "completed",
                   "environment": "development",
                   "identity": {
@@ -463,28 +465,28 @@
                           "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
                           "rank": 1,
                           "business": {
-                            "name": "Example City Archives",
-                            "url": "https://example.com/city-archives",
-                            "phone": "+14165550123",
-                            "address": "Toronto, ON"
+                            "name": "Example Electronics",
+                            "url": "https://example.com/electronics",
+                            "phone": "+15125550123",
+                            "address": "Austin, TX"
                           },
                           "status": "completed",
                           "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
                           "outcome": null,
-                          "content": "Historical maps of Toronto can be viewed in the Example City Archives reading room; no appointment is required.",
+                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
                           "evidence": [
                             {
                               "type": "call",
                               "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-                              "quote": "You can view historical maps of Toronto in our reading room without an appointment.",
+                              "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
                               "at_seconds": 18.2
                             }
                           ],
                           "sources": [
                             {
-                              "url": "https://example.com/city-archives",
-                              "title": "Example City Archives contact details",
-                              "phoneExcerpt": "Call +1 416-555-0123"
+                              "url": "https://example.com/electronics",
+                              "title": "Example Electronics contact details",
+                              "phoneExcerpt": "Call +1 512-555-0123"
                             }
                           ],
                           "verified_at": "2026-11-12T15:00:12Z",
@@ -495,28 +497,28 @@
                           "id": "k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
                           "rank": 2,
                           "business": {
-                            "name": "Example Reference Library",
-                            "url": "https://example.com/reference-library",
-                            "phone": "+14165550124",
-                            "address": "Toronto, ON"
+                            "name": "Example Games",
+                            "url": "https://example.com/games",
+                            "phone": "+15125550124",
+                            "address": "Austin, TX"
                           },
                           "status": "completed",
                           "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
                           "outcome": null,
-                          "content": "Historical maps of Toronto are available in the Example Reference Library special collections room; an appointment is required.",
+                          "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time.",
                           "evidence": [
                             {
                               "type": "call",
                               "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
-                              "quote": "Our historical maps of Toronto are in the special collections room. You need an appointment to view them.",
+                              "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
                               "at_seconds": 24.5
                             }
                           ],
                           "sources": [
                             {
-                              "url": "https://example.com/reference-library",
-                              "title": "Example Reference Library contact details",
-                              "phoneExcerpt": "Call +1 416-555-0124"
+                              "url": "https://example.com/games",
+                              "title": "Example Games contact details",
+                              "phoneExcerpt": "Call +1 512-555-0124"
                             }
                           ],
                           "verified_at": "2026-11-12T15:00:15Z",
@@ -531,7 +533,7 @@
                   },
                   "Structured answers": {
                     "summary": "Completed search with structured fields",
-                    "description": "The same completed search with the appointment_required and access_details fields requested in output.",
+                    "description": "The same completed search with the in_stock and pickup_details fields requested in output.",
                     "value": {
                       "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
                       "status": "completed",
@@ -540,72 +542,72 @@
                           "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
                           "rank": 1,
                           "business": {
-                            "name": "Example City Archives",
-                            "url": "https://example.com/city-archives",
-                            "phone": "+14165550123",
-                            "address": "Toronto, ON"
+                            "name": "Example Electronics",
+                            "url": "https://example.com/electronics",
+                            "phone": "+15125550123",
+                            "address": "Austin, TX"
                           },
                           "status": "completed",
                           "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
                           "outcome": null,
-                          "content": "Historical maps of Toronto can be viewed in the Example City Archives reading room; no appointment is required.",
+                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
                           "evidence": [
                             {
                               "type": "call",
                               "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-                              "quote": "You can view historical maps of Toronto in our reading room without an appointment.",
+                              "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
                               "at_seconds": 18.2
                             }
                           ],
                           "sources": [
                             {
-                              "url": "https://example.com/city-archives",
-                              "title": "Example City Archives contact details",
-                              "phoneExcerpt": "Call +1 416-555-0123"
+                              "url": "https://example.com/electronics",
+                              "title": "Example Electronics contact details",
+                              "phoneExcerpt": "Call +1 512-555-0123"
                             }
                           ],
                           "verified_at": "2026-11-12T15:00:12Z",
                           "completed_at": "2026-11-12T15:02:10Z",
                           "error": null,
                           "output": {
-                            "appointment_required": false,
-                            "access_details": "View historical maps of Toronto in the archives reading room."
+                            "in_stock": true,
+                            "pickup_details": "Pickup today until 6 p.m. Central Time."
                           }
                         },
                         {
                           "id": "k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
                           "rank": 2,
                           "business": {
-                            "name": "Example Reference Library",
-                            "url": "https://example.com/reference-library",
-                            "phone": "+14165550124",
-                            "address": "Toronto, ON"
+                            "name": "Example Games",
+                            "url": "https://example.com/games",
+                            "phone": "+15125550124",
+                            "address": "Austin, TX"
                           },
                           "status": "completed",
                           "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
                           "outcome": null,
-                          "content": "Historical maps of Toronto are available in the Example Reference Library special collections room; an appointment is required.",
+                          "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time.",
                           "evidence": [
                             {
                               "type": "call",
                               "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
-                              "quote": "Our historical maps of Toronto are in the special collections room. You need an appointment to view them.",
+                              "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
                               "at_seconds": 24.5
                             }
                           ],
                           "sources": [
                             {
-                              "url": "https://example.com/reference-library",
-                              "title": "Example Reference Library contact details",
-                              "phoneExcerpt": "Call +1 416-555-0124"
+                              "url": "https://example.com/games",
+                              "title": "Example Games contact details",
+                              "phoneExcerpt": "Call +1 512-555-0124"
                             }
                           ],
                           "verified_at": "2026-11-12T15:00:15Z",
                           "completed_at": "2026-11-12T15:03:05Z",
                           "error": null,
                           "output": {
-                            "appointment_required": true,
-                            "access_details": "Book an appointment to view historical maps of Toronto in the library special collections room."
+                            "in_stock": true,
+                            "pickup_details": "Pickup today until 8 p.m. Central Time."
                           }
                         }
                       ],
@@ -676,7 +678,7 @@
                 },
                 "example": {
                   "id": "search_15b2a4b8-fabc-41cc-8e38-2a4763db600e",
-                  "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
+                  "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
                   "status": "canceling",
                   "environment": "development",
                   "identity": {
@@ -931,7 +933,7 @@
             "minLength": 1,
             "maxLength": 8000,
             "description": "The information to obtain. Must contain non-whitespace text. Include location when it matters.",
-            "example": "Where can I access historical maps of Toronto, and do I need an appointment?",
+            "example": "Where can I buy a Nintendo Switch 2 in Austin today?",
             "pattern": "\\S"
           },
           "results": {
@@ -997,7 +999,7 @@
           "timezone": {
             "type": "string",
             "default": "UTC",
-            "example": "America/Toronto",
+            "example": "America/Chicago",
             "description": "IANA timezone used to resolve relative dates against this search creation timestamp.",
             "minLength": 1,
             "maxLength": 100,
@@ -1050,8 +1052,9 @@
           }
         },
         "example": {
-          "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
-          "results": 2
+          "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
+          "results": 2,
+          "timezone": "America/Chicago"
         }
       },
       "Search": {
@@ -1086,7 +1089,7 @@
           },
           "query": {
             "type": "string",
-            "example": "Where can I access historical maps of Toronto, and do I need an appointment?"
+            "example": "Where can I buy a Nintendo Switch 2 in Austin today?"
           },
           "status": {
             "type": "string",
@@ -1220,7 +1223,7 @@
         },
         "example": {
           "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-          "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
+          "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
           "status": "completed",
           "environment": "development",
           "identity": {
@@ -1401,28 +1404,28 @@
           "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
           "rank": 1,
           "business": {
-            "name": "Example City Archives",
-            "url": "https://example.com/city-archives",
-            "phone": "+14165550123",
-            "address": "Toronto, ON"
+            "name": "Example Electronics",
+            "url": "https://example.com/electronics",
+            "phone": "+15125550123",
+            "address": "Austin, TX"
           },
           "status": "completed",
           "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
           "outcome": null,
-          "content": "Historical maps of Toronto can be viewed in the Example City Archives reading room; no appointment is required.",
+          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
           "evidence": [
             {
               "type": "call",
               "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-              "quote": "You can view historical maps of Toronto in our reading room without an appointment.",
+              "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
               "at_seconds": 18.2
             }
           ],
           "sources": [
             {
-              "url": "https://example.com/city-archives",
-              "title": "Example City Archives contact details",
-              "phoneExcerpt": "Call +1 416-555-0123"
+              "url": "https://example.com/electronics",
+              "title": "Example Electronics contact details",
+              "phoneExcerpt": "Call +1 512-555-0123"
             }
           ],
           "verified_at": "2026-11-12T15:00:12Z",
@@ -1487,28 +1490,28 @@
               "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
               "rank": 1,
               "business": {
-                "name": "Example City Archives",
-                "url": "https://example.com/city-archives",
-                "phone": "+14165550123",
-                "address": "Toronto, ON"
+                "name": "Example Electronics",
+                "url": "https://example.com/electronics",
+                "phone": "+15125550123",
+                "address": "Austin, TX"
               },
               "status": "completed",
               "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
               "outcome": null,
-              "content": "Historical maps of Toronto can be viewed in the Example City Archives reading room; no appointment is required.",
+              "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
               "evidence": [
                 {
                   "type": "call",
                   "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-                  "quote": "You can view historical maps of Toronto in our reading room without an appointment.",
+                  "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
                   "at_seconds": 18.2
                 }
               ],
               "sources": [
                 {
-                  "url": "https://example.com/city-archives",
-                  "title": "Example City Archives contact details",
-                  "phoneExcerpt": "Call +1 416-555-0123"
+                  "url": "https://example.com/electronics",
+                  "title": "Example Electronics contact details",
+                  "phoneExcerpt": "Call +1 512-555-0123"
                 }
               ],
               "verified_at": "2026-11-12T15:00:12Z",
@@ -1519,28 +1522,28 @@
               "id": "k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
               "rank": 2,
               "business": {
-                "name": "Example Reference Library",
-                "url": "https://example.com/reference-library",
-                "phone": "+14165550124",
-                "address": "Toronto, ON"
+                "name": "Example Games",
+                "url": "https://example.com/games",
+                "phone": "+15125550124",
+                "address": "Austin, TX"
               },
               "status": "completed",
               "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
               "outcome": null,
-              "content": "Historical maps of Toronto are available in the Example Reference Library special collections room; an appointment is required.",
+              "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time.",
               "evidence": [
                 {
                   "type": "call",
                   "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
-                  "quote": "Our historical maps of Toronto are in the special collections room. You need an appointment to view them.",
+                  "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
                   "at_seconds": 24.5
                 }
               ],
               "sources": [
                 {
-                  "url": "https://example.com/reference-library",
-                  "title": "Example Reference Library contact details",
-                  "phoneExcerpt": "Call +1 416-555-0124"
+                  "url": "https://example.com/games",
+                  "title": "Example Games contact details",
+                  "phoneExcerpt": "Call +1 512-555-0124"
                 }
               ],
               "verified_at": "2026-11-12T15:00:15Z",

@@ -30,8 +30,11 @@ async function textLayer(text, size, color, maxHeight, weight = '') {
 
 async function main() {
   const config = JSON.parse(await read('docs.json'));
+  const logoHeight = 176;
+  const logoToTitleGap = 64;
+  const titleToDescriptionGap = 24;
   const logo = await sharp(Buffer.from(await read('logo/thred.svg')), { density: 300 })
-    .resize({ height: 176 }).png().toBuffer();
+    .resize({ height: logoHeight }).png().toBuffer();
   let count = 0;
 
   for (const group of config.navigation.groups) {
@@ -50,15 +53,19 @@ async function main() {
       description = description.replace(/`([^`]+)`/g, '$1');
 
       const title = await textLayer(metadata.title, 64, '#F5F5F5', 148, 'SemiBold');
-      const descriptionTop = 281 + title.height + 30;
-      const detail = await textLayer(description, 30, '#B5B5B5', 509 - descriptionTop);
+      const detail = await textLayer(description, 30, '#B5B5B5', 198 - title.height);
+      const contentHeight = logoHeight + logoToTitleGap + title.height
+        + titleToDescriptionGap + detail.height;
+      const logoTop = Math.round((630 - contentHeight) / 2);
+      const titleTop = logoTop + logoHeight + logoToTitleGap;
+      const descriptionTop = titleTop + title.height + titleToDescriptionGap;
       const output = `images/og/${page}.png`;
       await fs.mkdir(path.dirname(path.join(root, output)), { recursive: true });
       await sharp({ create: {
         width: 1200, height: 630, channels: 3, background: '#1D1D1D',
       } }).composite([
-        { input: logo, left: 72, top: 64 },
-        { input: title.data, left: 72, top: 281 },
+        { input: logo, left: 72, top: logoTop },
+        { input: title.data, left: 72, top: titleTop },
         { input: detail.data, left: 72, top: descriptionTop },
       ]).png({ compressionLevel: 9 }).toFile(path.join(root, output));
 

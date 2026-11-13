@@ -345,6 +345,18 @@ pre, pre code {
     border-right-color: var(--thred-panel-border);
   }
 
+  /* Keep the native theme control below the sidebar's Website/Dashboard links. */
+  #sidebar [role="group"][aria-label="Theme preference"] {
+    position: fixed;
+    left: 32px;
+    bottom: 20px;
+    z-index: 1;
+  }
+
+  #sidebar > ul:last-child {
+    padding-bottom: 64px;
+  }
+
   #sidebar::after {
     content: "";
     position: absolute;

@@ -1,6 +1,8 @@
 # Thred API documentation
 
-Mintlify documentation for Thred, the data API for the phone, at `https://api.thred.dev`. The Collect API at `/v1/collect` collects structured answers from a known phone number.
+November 12 documentation revision: developers supply a query and result count to `/search`; Thred discovers relevant businesses, calls them, and returns paginated outcomes. Optional identity and public/customer purpose are request-scoped. Calls and result processing are fully automatic. This contract is implemented locally; production activation remains pending.
+
+Mintlify documentation for Thred, the data API for the phone, at `https://api.thred.dev`. The local `/search` contract discovers businesses and returns paginated phone-verified answers.
 
 ## Local preview
 
@@ -8,14 +10,16 @@ With the [Mintlify CLI](https://www.mintlify.com/docs/cli/install) installed, ru
 
 ## Content
 
-- `introduction.mdx` and `quickstart.mdx`: overview and one end-to-end example.
+- `introduction.mdx` and `quickstart.mdx`: overview, request example and result polling.
 - `guides/what-you-can-build.mdx`: use cases and available options.
 - `api-reference/openapi.json`: the API contract.
-- `api-reference/*.mdx`: endpoint pages using [Mintlify's OpenAPI integration](https://www.mintlify.com/docs/api-playground/openapi-setup).
+- `api-reference/*.mdx`: endpoint pages using [Mintlify's OpenAPI integration](https://www.mintlify.com/docs/api-playground/openapi-setup), with cURL, JavaScript and Python search examples.
 - `docs.json`: navigation, Instrument Sans, and the shared Thred wordmark.
 - `style.css`: typography, light/dark colors, controls, and spacing matched to `thred-phone-data`.
 
-Keep the getting-started content to the two simple examples: business hours and inventory. Document the implemented `to`, `instructions`, `input`, and `output` request fields and `call_` IDs. The request `output` is a flat map of answer names to `string`, `number`, `integer`, or `boolean`; all declared answers are expected. Create responses contain `id` and `status`. Collection responses contain `id`, `status`, and `output`, with `missing_fields` only for incomplete results and `error` only when present. List and webhook envelopes still use `data`. Search is not an available API.
+Document the query-driven `/search` request and its `search_` IDs. Without request `output`, each result contains a concise text answer in `content` (or null when unavailable), with no generated custom fields and no `output` property. Explicit request `output` remains supported by the API and adds the requested structured values to result `output`. The dashboard currently disables custom-schema configuration. Keep business metadata, call status, transcript `evidence`, discovery `sources`, and cursor pagination consistent with the backend contract.
+
+Search routes use `/search`, without a `/v1` prefix. Account and utility routes retain `/v1/auth/me`, `/v1/usage` and `/v1/health`. The new public router does not expose Collect or Crawl; the old collection pages direct readers to Search.
 
 ## Static validation
 
@@ -30,9 +34,9 @@ Do not run tests or place API calls unless requested. Keep changes local unless 
 
 ## Updating the contract
 
-Check the sibling `thred-data-backend` repository: `src/contracts.ts`, `src/index.ts`, `convex/http.ts`, `convex/calls.ts`, `convex/lib/callView.ts`, `convex/usage.ts`, and `convex/recordings.ts`.
+Check the sibling `thred-data-backend` repository: `src/search-contracts.ts`, `src/contracts.ts`, `src/index.ts`, `convex/http.ts`, `convex/searches.ts`, `convex/lib/callView.ts`, and `convex/usage.ts`.
 
-Check `../thred-phone-data/deployment/STATUS.md` before advertising local-only work. At this revision, recording and monetary billing are disabled; the local forced-review parameter is not advertised. Use only fictional data in examples.
+Check `../thred-phone-data/deployment/STATUS.md` before advertising local-only work. At this revision, recording and monetary billing are disabled. Use only fictional data in examples.
 
 ## Styling
 

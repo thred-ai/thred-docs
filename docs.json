@@ -18,13 +18,12 @@
         ]
       },
       {
-        "group": "Collect API",
+        "group": "Search API",
         "pages": [
-          "api-reference/create-collection",
-          "api-reference/get-collection",
-          "api-reference/list-collections",
-          "api-reference/cancel-collection",
-          "api-reference/get-recording"
+          "api-reference/create-search",
+          "api-reference/get-search",
+          "api-reference/search-results",
+          "api-reference/cancel-search"
         ]
       },
       {
@@ -48,7 +47,7 @@
       "dark": "#1D1D1D"
     }
   },
-  "description": "The data API for the phone. Collect structured answers from a known phone number.",
+  "description": "Search for answers from businesses, verified by phone.",
   "navbar": {
     "links": [
       {

@@ -1,38 +1,31 @@
 ---
-title: "Thred API"
-description: "The data API for the phone."
-icon: "phone"
+title: "Search for answers by phone"
+description: "Ask a question. Thred finds relevant businesses and calls them."
 ---
 
-Thred collects information over the phone and returns structured JSON.
+Send a query and the number of business calls to make. Thred discovers relevant businesses with verified phone numbers, generates questions, calls them, and returns concise text answers in `content` with transcript evidence.
 
-Use the **Collect API** when you know who to ask. Provide a phone number and instructions, add known context values in `input`, and name the answers you want and their types in `output`. Thred makes the call and gets the answers: business hours, inventory, availability, and more.
+```json
+{
+  "query": "Which dentists in Toronto accept new patients and have appointments this week?",
+  "results": 10,
+  "timezone": "America/Toronto"
+}
+```
 
-## How it works
+`results` is a hard cap on distinct-business call attempts. Unanswered calls and negative responses count. Successful matches are not guaranteed, and Thred reports when discovery finds fewer eligible businesses. Reading another result page never starts more calls.
 
-1. **Choose the source.** Send the phone number you want Thred to call and what you want to find out.
-2. **Choose your output.** Define the fields you want back in `output`. The result is always an object.
-3. **Get the answers.** Save the collection ID and retrieve the answers in `output` when they are ready.
+Each new search obtains fresh answers through its calls. Phone numbers are discovered by Thred; the request only requires `query` and `results`.
 
-Thred handles the conversation and phone menus, and can request human assistance when needed.
+Searches are asynchronous. Create a search, read progress, then retrieve paginated outcomes. Each call is finalized automatically, and its answer becomes available as soon as processing finishes.
 
-<CardGroup cols={2}>
-  <Card title="Collect your first answers" icon="bolt" href="/quickstart">
-    Go from an API key to your first result with one simple example.
-  </Card>
-  <Card title="What you can build" icon="phone" href="/guides/what-you-can-build">
-    Explore use cases and the options available for each collection.
-  </Card>
-</CardGroup>
-
-## Collect API at a glance
-
-| You want to… | Endpoint |
+| Endpoint | Purpose |
 | --- | --- |
-| Start a collection | [POST /v1/collect](/api-reference/create-collection) |
-| Read its status and result | [GET /v1/collect/&#123;id&#125;](/api-reference/get-collection) |
-| List your collections | [GET /v1/collect](/api-reference/list-collections) |
-| Cancel a collection | [POST /v1/collect/&#123;id&#125;/cancel](/api-reference/cancel-collection) |
-| Check your usage | [GET /v1/usage](/api-reference/get-usage) |
+| `POST /search` | Start a search. |
+| `GET /search/{id}` | Read progress and call counters. |
+| `GET /search/{id}/results` | Read published business outcomes. |
+| `POST /search/{id}/cancel` | Stop remaining work and retain published answers. |
 
-The base URL is `https://api.thred.dev`. Use a bearer API key from the [dashboard](https://dashboard.thred.ai) to authenticate.
+Results include the business, its text answer in `content`, call status, transcript `evidence` and discovery `sources`. If no supported answer is available, `content` is null. Supply optional `output` fields when you also need structured values.
+
+[Start with the quickstart](/quickstart).

@@ -354,8 +354,20 @@ pre, pre code {
   }
 
   #sidebar > ul:last-child {
+    position: relative;
     padding-top: 64px;
     padding-bottom: 12px;
+    border-top-color: transparent;
+  }
+
+  /* One divider below the theme control, above Website and Dashboard. */
+  #sidebar > ul:last-child::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 84px;
+    border-top: 1px solid var(--thred-panel-border);
+    pointer-events: none;
   }
 
   #sidebar::after {

@@ -27,6 +27,12 @@
         ]
       },
       {
+        "group": "Guides",
+        "pages": [
+          "guides/webhooks"
+        ]
+      },
+      {
         "group": "Account and utilities",
         "pages": [
           "api-reference/authentication",

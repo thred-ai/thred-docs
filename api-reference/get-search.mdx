@@ -1,17 +1,23 @@
 ---
-title: "Get search progress"
+title: "Get a search"
 openapi: "api-reference/openapi.json GET /search/{id}"
 ---
 
-Read the state of a search using the `search_` ID returned at creation.
+Read a search's status and progress using the `id` returned at creation. Set `THRED_SEARCH_ID` to that ID before running the example:
 
 ```bash
-curl https://api.thred.dev/search/search_YOUR_SEARCH_ID \
+export THRED_SEARCH_ID="SEARCH_ID_FROM_CREATE_RESPONSE"
+
+curl "https://api.thred.dev/search/$THRED_SEARCH_ID" \
   -H "Authorization: Bearer $THRED_API_KEY"
 ```
 
-`requested_calls` is the original call cap. `selected_businesses` is the API field for the number of selected sources; `attempted_calls`, `answered_calls` and `published_results` track execution. Answered calls can include automated answering systems. `discovery_shortfall` reports when fewer eligible sources were found than requested.
+The example response shows a completed search with two published results. Retrieve the answers from [Get search results](/api-reference/search-results).
 
-Continue polling until `terminal` is true. Terminal statuses are `completed`, `failed`, `canceled` and `expired`. A completed search means its outcomes have settled; individual results can still contain negative answers, partial answers or unsuccessful calls.
+## Status and progress
 
-Read published answers through [Get search results](/api-reference/search-results), including while other calls are still running.
+`discovering` and `running` indicate active work. `completed` means all selected results have finished processing, and `terminal` is true. Results are also readable while the search runs.
+
+`published_results` counts available results. `requested_calls` is the original call cap; `selected_businesses` counts selected sources. `attempted_calls` and `answered_calls` track execution, including automated answering systems. `discovery_shortfall` reports how many requested sources could not be selected.
+
+A terminal search can also be `failed`, `canceled` or `expired`. Inspect `error` and `stop_reason` when present. Individual results have their own statuses, so a completed search does not guarantee a complete answer from every source.

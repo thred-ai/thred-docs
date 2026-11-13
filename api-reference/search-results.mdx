@@ -3,16 +3,22 @@ title: "Get search results"
 openapi: "api-reference/openapi.json GET /search/{id}/results"
 ---
 
-Read published outcomes without starting more calls. Each response contains one `results` array and the search's status and pagination fields.
+Read answers, source details and evidence for a search. Use the `id` from the create response as `THRED_SEARCH_ID`.
 
 ```bash
-curl 'https://api.thred.dev/search/search_YOUR_SEARCH_ID/results?limit=10' \
+curl "https://api.thred.dev/search/$THRED_SEARCH_ID/results?limit=10" \
   -H "Authorization: Bearer $THRED_API_KEY"
 ```
 
-Pass the returned `next_cursor` as `cursor` on the next request. `has_more` describes saved results available now. When it is false and `terminal` is false, keep polling that cursor for later outcomes. Stop when `terminal` is true and `has_more` is false.
+The primary example shows a completed search with two answers. The structured-output example includes the additional fields requested through `output`.
+
+## Read additional pages
+
+Pass the returned `next_cursor` as `cursor` on the next request. `limit` accepts 1–100 and defaults to 10. `has_more` describes saved results available now. When it is false and `terminal` is false, keep polling that cursor for later results. Stop when `terminal` is true and `has_more` is false. Reading a page does not start new work.
 
 Results arrive in publication order. `rank` preserves each result's original relevance rank, so a result that takes longer can appear on a later page without being skipped.
+
+## Understand a result
 
 Each search result includes:
 
@@ -24,4 +30,10 @@ Each search result includes:
 - `verified_at`: when source identity and contact information was verified during discovery.
 - `completed_at`: when the call was finalized, or when its outcome was published if no finalization timestamp is available.
 
-Use the result's `status`, `error` and `outcome` alongside its content to handle partial answers and unsuccessful calls. `verified_at` describes discovery verification; it is not the time of the phone answer.
+## Partial and unavailable answers
+
+`content` can be null when no answer has verified supporting evidence, even if the call's `status` is `completed`. Requested structured `output` can be null or omit fields that could not be answered. A confirmed negative answer is still useful content.
+
+A result's `error` is a nullable error-code string, while the search-level `error` is an object with `code` and `message`. Use these fields and `outcome` to understand unsuccessful attempts; check `content` and `output` before using the answers.
+
+`verified_at` describes source verification. `completed_at` identifies result finalization.

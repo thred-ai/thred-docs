@@ -2,3 +2,14 @@
 title: "Get usage"
 openapi: "api-reference/openapi.json GET /v1/usage"
 ---
+
+Read daily activity for the workspace and environment selected by your API key. Dates use UTC. Omit `from` and `to` for today, or request up to 31 inclusive days.
+
+```bash
+curl 'https://api.thred.dev/v1/usage?from=2026-11-12&to=2026-11-12' \
+  -H "Authorization: Bearer $THRED_API_KEY"
+```
+
+`searches`, `attempted_calls` and `answered_calls` are attributed to the search's creation date. `requested`, `completed`, `incomplete`, `failed`, `canceled` and `elapsed_job_seconds` are attributed to each call's creation date. These groups can fall on different dates when a search spans midnight.
+
+The response reports operational counters. `billing_status` is `unreconciled` and `billed_seconds` is null; use your dashboard billing records for charges.

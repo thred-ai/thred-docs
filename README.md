@@ -14,6 +14,7 @@ With the [Mintlify CLI](https://www.mintlify.com/docs/cli/install) installed, ru
 
 - `introduction.mdx` and `quickstart.mdx`: overview, request example and result polling.
 - `guides/what-you-can-build.mdx`: use cases and available options.
+- `guides/webhooks.mdx`: event payloads, signature verification and delivery handling.
 - `api-reference/openapi.json`: the API contract.
 - `api-reference/*.mdx`: endpoint pages using [Mintlify's OpenAPI integration](https://www.mintlify.com/docs/api-playground/openapi-setup), with cURL, JavaScript and Python search examples.
 - `docs.json`: navigation, Instrument Sans, and the shared Thred wordmark.
@@ -22,6 +23,8 @@ With the [Mintlify CLI](https://www.mintlify.com/docs/cli/install) installed, ru
 Document the query-driven `/search` request and its `search_` IDs. Without request `output`, each result contains a concise text answer in `content` (or null when unavailable), with no generated custom fields and no `output` property. Explicit request `output` remains supported by the API and adds the requested structured values to result `output`. The dashboard currently disables custom-schema configuration. Keep source metadata, call status, transcript `evidence`, discovery `sources`, and cursor pagination consistent with the backend contract.
 
 Search routes use `/search`, without a `/v1` prefix. Account and utility routes retain `/v1/auth/me`, `/v1/usage` and `/v1/health`. The new public router does not expose Collect or Crawl; the old collection pages direct readers to Search.
+
+Primary examples must show the normal successful flow: accepted creation, completed search and populated results. Keep cancellation examples on the cancellation endpoint. Use one consistent request and result count across the quickstart and reference, with matching IDs, counters, timestamps, evidence and output values. Inspect the rendered example selected by default as well as the source schema; structural validation cannot establish whether an example is useful.
 
 ## Static validation
 

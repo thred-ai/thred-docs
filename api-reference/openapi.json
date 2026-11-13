@@ -51,6 +51,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Health"
+                },
+                "example": {
+                  "service": "thred-data-backend",
+                  "status": "ok",
+                  "environment": "production"
                 }
               }
             }
@@ -73,6 +78,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Identity"
+                },
+                "example": {
+                  "workspace_id": "p17n2d6c9f4g7h0j3k5m8q1s6v9w2x4z",
+                  "environment": "development",
+                  "key_id": "jd7q4p5t9n2s8v6w3x1z0a4b6c8d2e5f"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request identifier for correlating this response.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
                 }
               }
             }
@@ -96,7 +115,7 @@
           "Usage"
         ],
         "summary": "Get daily usage",
-        "description": "Read daily search and call counters for 1\u201331 inclusive UTC days. Both dates default to today. Search metrics use the search creation date; call metrics use the call creation date. These counters are not a billing statement.",
+        "description": "Read operational usage for 1\u201331 inclusive UTC days. Both dates default to today. searches, attempted_calls, and answered_calls use the search creation date. requested, completed, incomplete, failed, canceled, and elapsed_job_seconds use each call creation date. These counters are not a billing statement.",
         "parameters": [
           {
             "name": "from",
@@ -107,7 +126,7 @@
               "format": "date",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
             },
-            "example": "2026-10-30"
+            "example": "2026-11-12"
           },
           {
             "name": "to",
@@ -118,7 +137,7 @@
               "format": "date",
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
             },
-            "example": "2026-10-30"
+            "example": "2026-11-12"
           }
         ],
         "responses": {
@@ -128,6 +147,38 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Usage"
+                },
+                "example": {
+                  "from": "2026-11-12",
+                  "to": "2026-11-12",
+                  "environment": "development",
+                  "timezone": "UTC",
+                  "attribution": "search_created_date_for_search_metrics_call_created_date_for_call_metrics",
+                  "billing_status": "unreconciled",
+                  "billed_seconds": null,
+                  "data": [
+                    {
+                      "day": "2026-11-12",
+                      "searches": 1,
+                      "attempted_calls": 2,
+                      "answered_calls": 2,
+                      "requested": 2,
+                      "completed": 2,
+                      "incomplete": 0,
+                      "failed": 0,
+                      "canceled": 0,
+                      "elapsed_job_seconds": 240
+                    }
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "description": "Server-generated request identifier for correlating this response.",
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
                 }
               }
             }
@@ -154,7 +205,7 @@
         ],
         "operationId": "createSearch",
         "summary": "Create a search",
-        "description": "Start a search for answers to a query. Returns HTTP 202 immediately; poll progress and results while work runs. Reuse the same Idempotency-Key and identical request for retries; a changed request with the same key returns 409. Omitting the header creates a new search on each POST. Maximum 20 unfinished searches per workspace/environment.",
+        "description": "Start a search for answers to a query. Returns HTTP 202 with a search ID; use it to retrieve status and results.",
         "parameters": [
           {
             "name": "Idempotency-Key",
@@ -166,7 +217,7 @@
               "maxLength": 200,
               "pattern": "^[!-~]{1,200}$"
             },
-            "description": "Optional retry key containing 1\u2013200 printable, non-space ASCII characters. Reuse it with the same request to avoid creating another search."
+            "description": "Optional retry key containing 1\u2013200 printable, non-space ASCII characters. Reuse it with the same request to avoid creating another search; a different request with that key returns 409. Omitting it creates new work on each POST."
           }
         ],
         "requestBody": {
@@ -177,20 +228,18 @@
                 "$ref": "#/components/schemas/SearchRequest"
               },
               "examples": {
-                "textAnswers": {
-                  "summary": "Text answers",
+                "Text answers": {
+                  "summary": "Search for answers",
                   "value": {
                     "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
-                    "results": 2,
-                    "timezone": "America/Toronto"
+                    "results": 2
                   }
                 },
-                "customOutput": {
-                  "summary": "Text answers with custom fields",
+                "Structured answers": {
+                  "summary": "Request structured fields",
                   "value": {
                     "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
                     "results": 2,
-                    "timezone": "America/Toronto",
                     "output": {
                       "appointment_required": {
                         "type": "boolean",
@@ -280,7 +329,7 @@
           "Search"
         ],
         "operationId": "getSearch",
-        "summary": "Get search progress",
+        "summary": "Get a search",
         "parameters": [
           {
             "name": "id",
@@ -288,13 +337,15 @@
             "required": true,
             "schema": {
               "type": "string",
-              "example": "search_..."
-            }
+              "pattern": "^search_[a-z0-9-]+$"
+            },
+            "description": "Search ID returned by POST /search.",
+            "example": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
           }
         ],
         "responses": {
           "200": {
-            "description": "Search progress.",
+            "description": "Current search status and progress counters.",
             "content": {
               "application/json": {
                 "schema": {
@@ -303,7 +354,7 @@
                 "example": {
                   "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
                   "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
-                  "status": "running",
+                  "status": "completed",
                   "environment": "development",
                   "identity": {
                     "name": "AI assistant"
@@ -311,14 +362,14 @@
                   "call_reason": "public",
                   "requested_calls": 2,
                   "selected_businesses": 2,
-                  "attempted_calls": 1,
-                  "answered_calls": 1,
-                  "published_results": 1,
+                  "attempted_calls": 2,
+                  "answered_calls": 2,
+                  "published_results": 2,
                   "discovery_shortfall": 0,
                   "created_at": "2026-11-12T15:00:00Z",
                   "deadline_at": "2026-11-12T15:30:00Z",
-                  "finished_at": null,
-                  "terminal": false,
+                  "finished_at": "2026-11-12T15:03:10Z",
+                  "terminal": true,
                   "cancellation_requested": false,
                   "stop_reason": null,
                   "error": null
@@ -348,7 +399,7 @@
             "$ref": "#/components/responses/Unavailable"
           }
         },
-        "description": "Read the current status and progress counters. Continue polling until terminal is true. Results are retrieved separately from GET /search/{id}/results."
+        "description": "Read the current status and progress counters for a search. The example shows a completed search. While terminal is false, continue polling. Retrieve the answers from `GET /search/{id}/results`."
       }
     },
     "/search/{id}/results": {
@@ -357,8 +408,8 @@
           "Search"
         ],
         "operationId": "getSearchResults",
-        "summary": "Get paginated results",
-        "description": "Read saved outcomes in immutable publication order. GET never initiates calls. Continue polling next_cursor while terminal is false. Relevance rank is included separately.",
+        "summary": "Get search results",
+        "description": "Read saved search results in the order they become available. Each result contains an answer, source details, and supporting evidence. Read the next page using next_cursor; continue polling while terminal is false. Reading results does not start more calls. rank preserves each source's relevance rank.",
         "parameters": [
           {
             "name": "id",
@@ -366,8 +417,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "example": "search_..."
-            }
+              "pattern": "^search_[a-z0-9-]+$"
+            },
+            "description": "Search ID returned by POST /search.",
+            "example": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
           },
           {
             "name": "limit",
@@ -377,7 +430,9 @@
               "minimum": 1,
               "maximum": 100,
               "default": 10
-            }
+            },
+            "description": "Maximum number of published results to return on this page.",
+            "example": 2
           },
           {
             "name": "cursor",
@@ -397,15 +452,15 @@
                   "$ref": "#/components/schemas/SearchResultsPage"
                 },
                 "examples": {
-                  "textAnswers": {
-                    "summary": "Text answers and an unavailable result",
-                    "description": "Fictional results: a supported answer and a source whose call was canceled before dialing. No custom output was requested.",
+                  "Completed search": {
+                    "summary": "Completed search",
+                    "description": "Two complete answers from fictional sources. No custom output was requested.",
                     "value": {
                       "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                      "status": "canceled",
+                      "status": "completed",
                       "results": [
                         {
-                          "id": "result_example_1",
+                          "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
                           "rank": 1,
                           "business": {
                             "name": "Example City Archives",
@@ -437,7 +492,7 @@
                           "error": null
                         },
                         {
-                          "id": "result_example_2",
+                          "id": "k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
                           "rank": 2,
                           "business": {
                             "name": "Example Reference Library",
@@ -445,11 +500,18 @@
                             "phone": "+14165550124",
                             "address": "Toronto, ON"
                           },
-                          "status": "canceled",
-                          "call_id": null,
+                          "status": "completed",
+                          "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
                           "outcome": null,
-                          "content": null,
-                          "evidence": [],
+                          "content": "Historical maps of Toronto are available in the Example Reference Library special collections room; an appointment is required.",
+                          "evidence": [
+                            {
+                              "type": "call",
+                              "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
+                              "quote": "Our historical maps of Toronto are in the special collections room. You need an appointment to view them.",
+                              "at_seconds": 24.5
+                            }
+                          ],
                           "sources": [
                             {
                               "url": "https://example.com/reference-library",
@@ -458,8 +520,8 @@
                             }
                           ],
                           "verified_at": "2026-11-12T15:00:15Z",
-                          "completed_at": "2026-11-12T15:02:20Z",
-                          "error": "search_canceled"
+                          "completed_at": "2026-11-12T15:03:05Z",
+                          "error": null
                         }
                       ],
                       "next_cursor": "WyJzZWFyY2hfNmM0NzlhMzAtY2YwNi00ZGJhLThkYzktMmQyODkzYmJjNjRmIiwyXQ==",
@@ -467,15 +529,15 @@
                       "terminal": true
                     }
                   },
-                  "customOutput": {
-                    "summary": "Requested custom fields",
-                    "description": "The same fictional results when the request includes appointment_required and access_details output fields. Unavailable custom output is null.",
+                  "Structured answers": {
+                    "summary": "Completed search with structured fields",
+                    "description": "The same completed search with the appointment_required and access_details fields requested in output.",
                     "value": {
                       "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                      "status": "canceled",
+                      "status": "completed",
                       "results": [
                         {
-                          "id": "result_example_1",
+                          "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
                           "rank": 1,
                           "business": {
                             "name": "Example City Archives",
@@ -511,7 +573,7 @@
                           }
                         },
                         {
-                          "id": "result_example_2",
+                          "id": "k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
                           "rank": 2,
                           "business": {
                             "name": "Example Reference Library",
@@ -519,11 +581,18 @@
                             "phone": "+14165550124",
                             "address": "Toronto, ON"
                           },
-                          "status": "canceled",
-                          "call_id": null,
+                          "status": "completed",
+                          "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
                           "outcome": null,
-                          "content": null,
-                          "evidence": [],
+                          "content": "Historical maps of Toronto are available in the Example Reference Library special collections room; an appointment is required.",
+                          "evidence": [
+                            {
+                              "type": "call",
+                              "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
+                              "quote": "Our historical maps of Toronto are in the special collections room. You need an appointment to view them.",
+                              "at_seconds": 24.5
+                            }
+                          ],
                           "sources": [
                             {
                               "url": "https://example.com/reference-library",
@@ -532,25 +601,17 @@
                             }
                           ],
                           "verified_at": "2026-11-12T15:00:15Z",
-                          "completed_at": "2026-11-12T15:02:20Z",
-                          "error": "search_canceled",
-                          "output": null
+                          "completed_at": "2026-11-12T15:03:05Z",
+                          "error": null,
+                          "output": {
+                            "appointment_required": true,
+                            "access_details": "Book an appointment to view historical maps of Toronto in the library special collections room."
+                          }
                         }
                       ],
                       "next_cursor": "WyJzZWFyY2hfNmM0NzlhMzAtY2YwNi00ZGJhLThkYzktMmQyODkzYmJjNjRmIiwyXQ==",
                       "has_more": false,
                       "terminal": true
-                    }
-                  },
-                  "waiting": {
-                    "summary": "Waiting for more results",
-                    "value": {
-                      "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                      "status": "running",
-                      "results": [],
-                      "next_cursor": "WyJzZWFyY2hfNmM0NzlhMzAtY2YwNi00ZGJhLThkYzktMmQyODkzYmJjNjRmIiwxXQ==",
-                      "has_more": false,
-                      "terminal": false
                     }
                   }
                 }
@@ -591,7 +652,7 @@
         ],
         "operationId": "cancelSearch",
         "summary": "Cancel a search",
-        "description": "Idempotently stop queued work and request termination of active calls. Already published outcomes remain available. Cancellation settles after child calls are reconciled.",
+        "description": "Stop work that has not started and request cancellation of active calls. Published results remain available. Poll `GET /search/{id}` until terminal is true. Repeated cancellation requests are safe.",
         "parameters": [
           {
             "name": "id",
@@ -599,8 +660,10 @@
             "required": true,
             "schema": {
               "type": "string",
-              "example": "search_..."
-            }
+              "pattern": "^search_[a-z0-9-]+$"
+            },
+            "description": "Search ID returned by POST /search.",
+            "example": "search_15b2a4b8-fabc-41cc-8e38-2a4763db600e"
           }
         ],
         "responses": {
@@ -612,7 +675,7 @@
                   "$ref": "#/components/schemas/Search"
                 },
                 "example": {
-                  "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                  "id": "search_15b2a4b8-fabc-41cc-8e38-2a4763db600e",
                   "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
                   "status": "canceling",
                   "environment": "development",
@@ -623,8 +686,8 @@
                   "requested_calls": 2,
                   "selected_businesses": 2,
                   "attempted_calls": 1,
-                  "answered_calls": 1,
-                  "published_results": 1,
+                  "answered_calls": 0,
+                  "published_results": 0,
                   "discovery_shortfall": 0,
                   "created_at": "2026-11-12T15:00:00Z",
                   "deadline_at": "2026-11-12T15:30:00Z",
@@ -738,43 +801,47 @@
           "requested": {
             "type": "integer",
             "minimum": 0,
-            "description": "Accepted child calls, counted once; preparation failures may prevent dialing."
+            "description": "Accepted calls, counted on each call creation date. Some may fail before dialing."
           },
           "completed": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Calls finalized as completed, attributed to each call creation date."
           },
           "incomplete": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Calls finalized as incomplete, attributed to each call creation date."
           },
           "failed": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Calls finalized as failed, attributed to each call creation date."
           },
           "canceled": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Calls finalized as canceled, attributed to each call creation date."
           },
           "elapsed_job_seconds": {
             "type": "number",
             "minimum": 0,
-            "description": "Operational elapsed duration recorded on physical call closure."
+            "description": "Elapsed time recorded when calls close, counted on each call creation date."
           },
           "searches": {
             "type": "integer",
             "minimum": 0,
-            "description": "Accepted searches, counted once per idempotency key."
+            "description": "Accepted searches, counted once per idempotency key and attributed to the search creation date."
           },
           "attempted_calls": {
             "type": "integer",
             "minimum": 0,
-            "description": "Child calls whose dispatch was attempted; provider-uncertain attempts count."
+            "description": "Calls whose start was attempted, including attempts whose connection outcome is uncertain; counted on the parent search creation date."
           },
           "answered_calls": {
             "type": "integer",
             "minimum": 0,
-            "description": "Child calls answered by the destination, including automated answering systems."
+            "description": "Calls answered by the destination, including automated answering systems; attributed to the parent search creation date."
           }
         },
         "required": [
@@ -814,7 +881,8 @@
             "type": "string",
             "enum": [
               "search_created_date_for_search_metrics_call_created_date_for_call_metrics"
-            ]
+            ],
+            "description": "searches, attempted_calls, and answered_calls use the search creation date. The other counters use the call creation date."
           },
           "billing_status": {
             "type": "string",
@@ -862,13 +930,16 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 8000,
-            "description": "The information to obtain. Must contain non-whitespace text. Include location when it matters."
+            "description": "The information to obtain. Must contain non-whitespace text. Include location when it matters.",
+            "example": "Where can I access historical maps of Toronto, and do I need an appointment?",
+            "pattern": "\\S"
           },
           "results": {
             "type": "integer",
             "minimum": 1,
             "maximum": 100,
-            "description": "Hard cap of call attempts to distinct sources. Unanswered calls and negative answers count; successful matches are not guaranteed."
+            "description": "Hard cap of call attempts to distinct sources. Unanswered calls and negative answers count; successful matches are not guaranteed.",
+            "example": 2
           },
           "identity": {
             "type": "object",
@@ -880,7 +951,8 @@
               "name": {
                 "type": "string",
                 "minLength": 1,
-                "maxLength": 100
+                "maxLength": 100,
+                "pattern": "\\S"
               },
               "url": {
                 "type": "string",
@@ -892,7 +964,8 @@
               "description": {
                 "type": "string",
                 "maxLength": 1000,
-                "minLength": 1
+                "minLength": 1,
+                "pattern": "\\S"
               }
             },
             "default": {
@@ -912,7 +985,8 @@
             "type": "string",
             "maxLength": 300,
             "minLength": 1,
-            "description": "Geographic context for the search."
+            "description": "Geographic context for the search.",
+            "pattern": "\\S"
           },
           "language": {
             "type": "string",
@@ -926,7 +1000,8 @@
             "example": "America/Toronto",
             "description": "IANA timezone used to resolve relative dates against this search creation timestamp.",
             "minLength": 1,
-            "maxLength": 100
+            "maxLength": 100,
+            "pattern": "\\S"
           },
           "output": {
             "type": "object",
@@ -953,23 +1028,30 @@
                 "description": {
                   "type": "string",
                   "minLength": 1,
-                  "maxLength": 1000
+                  "maxLength": 1000,
+                  "pattern": "\\S"
                 }
               }
             },
-            "description": "Optional custom fields to collect, at most 20 fields and 12,000 characters of JSON. If omitted, each result contains a concise natural-language answer in content and no output property; Thred does not generate custom fields. Field names must contain 1\u2013120 characters and cannot be __proto__, prototype, or constructor. Descriptions must contain non-whitespace text."
+            "description": "Optional custom fields to collect, at most 20 fields and 12,000 characters of JSON. If omitted, each result contains a concise natural-language answer in content and no output property; Thred does not generate custom fields. Field names must contain 1\u2013120 characters and cannot be `__proto__`, `prototype`, or `constructor`. Descriptions must contain non-whitespace text."
           },
           "webhook_id": {
             "type": "string",
             "description": "An enabled webhook endpoint in the same workspace/environment.",
             "minLength": 1,
-            "maxLength": 200
+            "maxLength": 200,
+            "pattern": "\\S"
           },
           "metadata": {
             "type": "object",
             "additionalProperties": true,
-            "description": "Caller metadata, up to 4000 bytes."
+            "description": "Custom metadata stored with the search, up to 4000 UTF-8 bytes of JSON. Defaults to an empty object. It is not echoed in status, results, or webhook payloads.",
+            "default": {}
           }
+        },
+        "example": {
+          "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
+          "results": 2
         }
       },
       "Search": {
@@ -997,10 +1079,14 @@
         ],
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^search_[a-z0-9-]+$",
+            "description": "Search ID returned when the request was accepted.",
+            "example": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
           },
           "query": {
-            "type": "string"
+            "type": "string",
+            "example": "Where can I access historical maps of Toronto, and do I need an appointment?"
           },
           "status": {
             "type": "string",
@@ -1012,7 +1098,8 @@
               "failed",
               "canceled",
               "expired"
-            ]
+            ],
+            "description": "Current search state. completed, failed, canceled, and expired are terminal."
           },
           "environment": {
             "type": "string",
@@ -1037,17 +1124,13 @@
                 "type": "string",
                 "format": "uri",
                 "description": "HTTPS website without embedded credentials, to share when relevant.",
-                "minLength": 1,
-                "maxLength": 2000
+                "minLength": 1
               },
               "description": {
                 "type": "string",
                 "maxLength": 1000,
                 "minLength": 1
               }
-            },
-            "default": {
-              "name": "AI assistant"
             }
           },
           "call_reason": {
@@ -1059,7 +1142,9 @@
           },
           "requested_calls": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 1,
+            "maximum": 100,
+            "description": "The call-attempt limit supplied in the request results field."
           },
           "selected_businesses": {
             "type": "integer",
@@ -1068,7 +1153,8 @@
           },
           "attempted_calls": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Number of sources where starting a call was attempted."
           },
           "answered_calls": {
             "type": "integer",
@@ -1077,12 +1163,14 @@
           },
           "published_results": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Number of published result entries available from the results endpoint."
           },
           "discovery_shortfall": {
             "type": "integer",
             "nullable": true,
-            "minimum": 0
+            "minimum": 0,
+            "description": "Requested calls minus selected sources, bounded at zero. Null until source selection has finished."
           },
           "created_at": {
             "type": "string",
@@ -1096,17 +1184,21 @@
           "finished_at": {
             "type": "string",
             "format": "date-time",
-            "nullable": true
+            "nullable": true,
+            "description": "When the search reached a terminal state; null while work is in progress."
           },
           "terminal": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Whether all work has settled and no more results will be published."
           },
           "cancellation_requested": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "Whether cancellation was requested for this search."
           },
           "stop_reason": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "Reason work was stopped early, when present; null for normal completion."
           },
           "error": {
             "type": "object",
@@ -1122,20 +1214,46 @@
             "required": [
               "code",
               "message"
-            ]
+            ],
+            "description": "Search-level failure details, or null when no search-level error was recorded."
           }
+        },
+        "example": {
+          "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+          "query": "Where can I access historical maps of Toronto, and do I need an appointment?",
+          "status": "completed",
+          "environment": "development",
+          "identity": {
+            "name": "AI assistant"
+          },
+          "call_reason": "public",
+          "requested_calls": 2,
+          "selected_businesses": 2,
+          "attempted_calls": 2,
+          "answered_calls": 2,
+          "published_results": 2,
+          "discovery_shortfall": 0,
+          "created_at": "2026-11-12T15:00:00Z",
+          "deadline_at": "2026-11-12T15:30:00Z",
+          "finished_at": "2026-11-12T15:03:10Z",
+          "terminal": true,
+          "cancellation_requested": false,
+          "stop_reason": null,
+          "error": null
         }
       },
       "SearchResult": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "Opaque identifier for this result."
           },
           "rank": {
             "type": "integer",
             "minimum": 1,
-            "description": "Original relevance rank; pagination follows publication order."
+            "description": "Relevance rank assigned when the source was selected. Results are returned in the order they become available.",
+            "maximum": 100
           },
           "business": {
             "type": "object",
@@ -1168,22 +1286,24 @@
               "incomplete",
               "failed",
               "canceled"
-            ]
+            ],
+            "description": "Processing outcome for this source. A completed result can still have null content or output when no supporting transcript evidence was verified."
           },
           "call_id": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "Identifier of the call associated with this result, or null when no call was created."
           },
           "content": {
             "type": "string",
             "nullable": true,
-            "description": "Concise natural-language answer to the query using facts confirmed on this call. Null when no supported answer is available."
+            "description": "Concise natural-language answer to the query supported by verified transcript evidence. Null when no supported answer is available, including when processing has completed."
           },
           "output": {
             "type": "object",
             "nullable": true,
             "additionalProperties": true,
-            "description": "Custom structured values conforming to the explicitly supplied request.output fields, or null when unavailable. This property is omitted when request.output is absent."
+            "description": "Values for the custom fields explicitly supplied in request.output. Partial results may omit unknown fields. Null when values or supporting transcript evidence are unavailable. This property is omitted when request.output is absent."
           },
           "evidence": {
             "type": "array",
@@ -1200,11 +1320,13 @@
                   "type": "string"
                 },
                 "quote": {
-                  "type": "string"
+                  "type": "string",
+                  "description": "Verbatim excerpt from the contact transcript."
                 },
                 "at_seconds": {
                   "type": "number",
-                  "minimum": 0
+                  "minimum": 0,
+                  "description": "Start time of the matching transcript segment, in seconds from the call timeline."
                 }
               },
               "required": [
@@ -1213,7 +1335,8 @@
                 "quote",
                 "at_seconds"
               ]
-            }
+            },
+            "description": "Supporting excerpts verified against the saved contact transcript."
           },
           "sources": {
             "type": "array",
@@ -1235,7 +1358,8 @@
                 "title",
                 "phoneExcerpt"
               ]
-            }
+            },
+            "description": "Links used to verify the contact information."
           },
           "verified_at": {
             "type": "string",
@@ -1249,12 +1373,13 @@
           },
           "error": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "Result-level error code as a string, or null when no result-level error was recorded."
           },
           "outcome": {
             "type": "string",
             "nullable": true,
-            "description": "Underlying call termination reason, when available (for example an unanswered or canceled call)."
+            "description": "Underlying call termination reason when available, or null."
           }
         },
         "description": "A published search result. content is the concise natural-language answer, or null when no supported answer is available. output is included only when the search request explicitly supplies a custom output schema.",
@@ -1271,7 +1396,39 @@
           "completed_at",
           "error",
           "outcome"
-        ]
+        ],
+        "example": {
+          "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+          "rank": 1,
+          "business": {
+            "name": "Example City Archives",
+            "url": "https://example.com/city-archives",
+            "phone": "+14165550123",
+            "address": "Toronto, ON"
+          },
+          "status": "completed",
+          "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
+          "outcome": null,
+          "content": "Historical maps of Toronto can be viewed in the Example City Archives reading room; no appointment is required.",
+          "evidence": [
+            {
+              "type": "call",
+              "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
+              "quote": "You can view historical maps of Toronto in our reading room without an appointment.",
+              "at_seconds": 18.2
+            }
+          ],
+          "sources": [
+            {
+              "url": "https://example.com/city-archives",
+              "title": "Example City Archives contact details",
+              "phoneExcerpt": "Call +1 416-555-0123"
+            }
+          ],
+          "verified_at": "2026-11-12T15:00:12Z",
+          "completed_at": "2026-11-12T15:02:10Z",
+          "error": null
+        }
       },
       "SearchResultsPage": {
         "type": "object",
@@ -1285,7 +1442,10 @@
         ],
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^search_[a-z0-9-]+$",
+            "description": "Search ID associated with this page.",
+            "example": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
           },
           "status": {
             "type": "string",
@@ -1303,7 +1463,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/SearchResult"
-            }
+            },
+            "maxItems": 100
           },
           "next_cursor": {
             "type": "string",
@@ -1317,6 +1478,79 @@
             "type": "boolean",
             "description": "No future results will be published for this search."
           }
+        },
+        "example": {
+          "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+          "status": "completed",
+          "results": [
+            {
+              "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+              "rank": 1,
+              "business": {
+                "name": "Example City Archives",
+                "url": "https://example.com/city-archives",
+                "phone": "+14165550123",
+                "address": "Toronto, ON"
+              },
+              "status": "completed",
+              "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
+              "outcome": null,
+              "content": "Historical maps of Toronto can be viewed in the Example City Archives reading room; no appointment is required.",
+              "evidence": [
+                {
+                  "type": "call",
+                  "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
+                  "quote": "You can view historical maps of Toronto in our reading room without an appointment.",
+                  "at_seconds": 18.2
+                }
+              ],
+              "sources": [
+                {
+                  "url": "https://example.com/city-archives",
+                  "title": "Example City Archives contact details",
+                  "phoneExcerpt": "Call +1 416-555-0123"
+                }
+              ],
+              "verified_at": "2026-11-12T15:00:12Z",
+              "completed_at": "2026-11-12T15:02:10Z",
+              "error": null
+            },
+            {
+              "id": "k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
+              "rank": 2,
+              "business": {
+                "name": "Example Reference Library",
+                "url": "https://example.com/reference-library",
+                "phone": "+14165550124",
+                "address": "Toronto, ON"
+              },
+              "status": "completed",
+              "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
+              "outcome": null,
+              "content": "Historical maps of Toronto are available in the Example Reference Library special collections room; an appointment is required.",
+              "evidence": [
+                {
+                  "type": "call",
+                  "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
+                  "quote": "Our historical maps of Toronto are in the special collections room. You need an appointment to view them.",
+                  "at_seconds": 24.5
+                }
+              ],
+              "sources": [
+                {
+                  "url": "https://example.com/reference-library",
+                  "title": "Example Reference Library contact details",
+                  "phoneExcerpt": "Call +1 416-555-0124"
+                }
+              ],
+              "verified_at": "2026-11-12T15:00:15Z",
+              "completed_at": "2026-11-12T15:03:05Z",
+              "error": null
+            }
+          ],
+          "next_cursor": "WyJzZWFyY2hfNmM0NzlhMzAtY2YwNi00ZGJhLThkYzktMmQyODkzYmJjNjRmIiwyXQ==",
+          "has_more": false,
+          "terminal": true
         }
       },
       "ErrorResponse": {
@@ -1338,14 +1572,15 @@
               "message": {
                 "type": "string"
               }
-            }
+            },
+            "description": "Request-level error details with a machine-readable code and a message."
           }
         }
       }
     },
     "responses": {
       "BadRequest": {
-        "description": "Invalid query, search options, output schema, cursor, webhook, or date range. Inspect error.code and error.message.",
+        "description": "Invalid JSON, query, options, output fields, idempotency key, cursor, webhook, or date range. Inspect error.code and error.message.",
         "content": {
           "application/json": {
             "schema": {
@@ -1395,7 +1630,7 @@
         }
       },
       "RateLimited": {
-        "description": "The environment has too many unfinished searches. Child calls wait for existing call concurrency and rate limits.",
+        "description": "The workspace/environment already has 20 unfinished searches. Existing searches continue; submit new work after capacity is available.",
         "content": {
           "application/json": {
             "schema": {
@@ -1405,7 +1640,7 @@
         }
       },
       "Unavailable": {
-        "description": "Calling or the backend is unavailable. Codes include calling_unavailable, environment_unavailable, not_configured, and backend_unavailable.",
+        "description": "The service or required environment configuration is unavailable. Codes include calling_unavailable, environment_unavailable, not_configured, and backend_unavailable. Inspect error.code and error.message.",
         "content": {
           "application/json": {
             "schema": {
@@ -1416,16 +1651,6 @@
       },
       "InternalError": {
         "description": "Unexpected server error.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            }
-          }
-        }
-      },
-      "RecordingUnavailable": {
-        "description": "Recording is not ready or storage identity cannot be verified. Recording is currently disabled on the hosted API.",
         "content": {
           "application/json": {
             "schema": {

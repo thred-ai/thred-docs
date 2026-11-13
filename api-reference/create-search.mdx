@@ -7,4 +7,4 @@ Send a `query` and `results` count. The API returns HTTP `202` with an `id`; use
 
 Optional `output` fields add structured values alongside the text answer. Choose **Structured answers** in the example menu to see the format.
 
-`results` accepts 1–100 and caps call attempts to distinct sources; the number of complete answers may be smaller. For safe retries, supply an `Idempotency-Key` on the first request and reuse it with the same body. Without that header, each POST starts a new search.
+`results` accepts 1–100 and caps call attempts to distinct sources; the number of complete answers may be smaller.

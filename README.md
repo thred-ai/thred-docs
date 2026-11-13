@@ -6,6 +6,8 @@ Mintlify documentation for Thred, a search API, at `https://api.thred.dev`.
 
 Keep reader-facing docs short and simple. Use one basic request-and-results flow, and let the generated API reference carry field details and language examples. Avoid duplicate examples and long implementation tutorials.
 
+Write for developers building apps and AI assistants. Lead with "Start building with Thred," explain that the API retrieves information over the phone, and guide readers to their first request. Frame use cases as things they can build.
+
 Describe Thred as broad search. Overview copy and examples should reflect research and information needs across domains. Calling mechanics belong in the relevant API details; field names such as `business` and `selected_businesses` do not define the product's scope. Preserve actual JSON field names when documenting the contract.
 
 Choose examples where phone calls uncover current facts such as stock, openings, availability, or delivery constraints.
@@ -55,4 +57,4 @@ Use `thred-phone-data/tailwind.config.ts`, `src/app/globals.css`, `PowerWorkspac
 
 Maple provides the full-height sidebar with the logo, search, and navigation inside it. Keep its native layout and a consistent 48px content inset; do not add the sidebar width to content padding. Style the active page through `aria-current="page"`. Check introduction, quickstart, and an endpoint page in both themes and at narrow widths after styling changes, including the hosted layout: the CLI preview can lag behind Mintlify's current renderer.
 
-On desktop, the native theme switcher sits above Website and Dashboard at the bottom of the sidebar. Keep one divider below the switcher, separating it from the links, and no divider above it. Reserve its space in the sidebar footer; keep Mintlify's native mobile placement.
+On desktop, the native theme switcher sits above Website at the bottom of the sidebar. Dashboard is hidden from navigation for now. Keep one divider below the switcher, separating it from Website, and no divider above it. Reserve its space in the sidebar footer; keep Mintlify's native mobile placement.

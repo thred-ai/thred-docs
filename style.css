@@ -345,11 +345,11 @@ pre, pre code {
     border-right-color: var(--thred-panel-border);
   }
 
-  /* Keep the native theme control above the sidebar's Website/Dashboard links. */
+  /* Keep the native theme control above the sidebar's Website link. */
   #sidebar [role="group"][aria-label="Theme preference"] {
     position: fixed;
     left: 32px;
-    bottom: 92px;
+    bottom: 60px;
     z-index: 1;
   }
 
@@ -360,12 +360,12 @@ pre, pre code {
     border-top-color: transparent;
   }
 
-  /* One divider below the theme control, above Website and Dashboard. */
+  /* One divider below the theme control, above Website. */
   #sidebar > ul:last-child::after {
     content: "";
     position: absolute;
     inset-inline: 0;
-    bottom: 84px;
+    bottom: 52px;
     border-top: 1px solid var(--thred-panel-border);
     pointer-events: none;
   }

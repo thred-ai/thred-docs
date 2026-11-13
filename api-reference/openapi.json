@@ -3,7 +3,7 @@
   "info": {
     "title": "Thred API",
     "version": "2.0.0",
-    "description": "Search for answers with source details and supporting evidence. Submit a query and retrieve results asynchronously. API keys select workspace and environment."
+    "description": "Retrieve information over the phone for your app or AI assistant. Submit a search query and read answers asynchronously, with source details and supporting evidence. API keys select workspace and environment."
   },
   "servers": [
     {
@@ -31,7 +31,7 @@
     },
     {
       "name": "Search",
-      "description": "Search for answers with source details and supporting evidence."
+      "description": "Search for answers over the phone, with source details and supporting evidence."
     }
   ],
   "paths": {

@@ -53,19 +53,14 @@
       "dark": "#1D1D1D"
     }
   },
-  "description": "Search for answers with sources and supporting evidence.",
+  "description": "Build apps and AI assistants with information gathered over the phone.",
   "navbar": {
     "links": [
       {
         "label": "Website",
         "href": "https://thred.ai"
       }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.thred.ai"
-    }
+    ]
   },
   "api": {
     "openapi": "api-reference/openapi.json",

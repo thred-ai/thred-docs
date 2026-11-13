@@ -10,7 +10,7 @@
   --thred-hover: #f3f3f3;
   --thred-accent: #3aa4c1;
   --thred-link: #0957d0;
-  --thred-workspace-shadow: 0 0 28px rgb(0 0 0 / 8%);
+  --thred-divider-shadow: rgb(0 0 0 / 6%);
   --sidebar-width: 14rem;
   --content-width: 48rem;
 }
@@ -24,7 +24,7 @@
   --thred-panel-border: #2d2d2d;
   --thred-hover: #2a2a2a;
   --thred-link: #8ab4f8;
-  --thred-workspace-shadow: 0 0 28px rgb(0 0 0 / 40%);
+  --thred-divider-shadow: rgb(0 0 0 / 28%);
 }
 
 html, body {
@@ -57,8 +57,8 @@ button, input, select, textarea {
 }
 
 img.nav-logo {
-  height: 34px !important;
-  width: 47px !important;
+  height: 48px !important;
+  width: auto !important;
   object-fit: contain;
 }
 
@@ -143,20 +143,26 @@ img.nav-logo {
   border-radius: 6px;
 }
 
+#navigation-items .sidebar-group a {
+  margin-left: 0;
+  width: 100%;
+  border-left: 0;
+}
+
 #navigation-items a:hover {
   color: var(--thred-text);
   background: var(--thred-hover);
 }
 
-/* The installed Mint theme marks the current link with this color utility. */
-#navigation-items .sidebar-group a[class~="bg-primary/10"] {
+/* Keep the current page styled like the dashboard's selected navigation. */
+#navigation-items .sidebar-group a[aria-current="page"] {
   color: var(--thred-text);
   background: var(--thred-muted-surface);
   font-weight: 500;
   text-shadow: none;
 }
 
-#sidebar-title {
+#sidebar-title, .sidebar-title {
   color: var(--thred-secondary-text);
   font-size: 12px;
   font-weight: 500;
@@ -322,30 +328,64 @@ pre, pre code {
   border-radius: 6px;
 }
 
+#pagination {
+  padding: 0;
+  border: 1px solid var(--thred-border);
+  border-radius: 6px;
+  background: var(--thred-surface);
+}
+
+#pagination a > div {
+  border-radius: 6px;
+}
+
 @media (min-width: 1024px) {
-  /* Keep the product's inset panel treatment on navigation only. */
+  /* Maple owns the full-height sidebar, including its logo and search. */
   #sidebar {
-    top: 76px !important;
-    bottom: 12px;
-    width: calc(var(--sidebar-width) + 12px);
-    margin-left: -12px;
-    border: 1px solid var(--thred-panel-border);
-    border-radius: 6px;
-    background: var(--thred-surface);
-    box-shadow: var(--thred-workspace-shadow);
+    border-right-color: var(--thred-panel-border);
   }
 
-  #sidebar-content > div > .sticky {
-    height: 20px;
+  /* Keep the native theme control above the sidebar's Website/Dashboard links. */
+  #sidebar [role="group"][aria-label="Theme preference"] {
+    position: fixed;
+    left: 32px;
+    bottom: 92px;
+    z-index: 1;
   }
 
-  #sidebar-content {
-    padding-inline: 12px;
-    border-radius: inherit;
+  #sidebar > ul:last-child {
+    position: relative;
+    padding-top: 64px;
+    padding-bottom: 12px;
+    border-top-color: transparent;
+  }
+
+  /* One divider below the theme control, above Website and Dashboard. */
+  #sidebar > ul:last-child::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 84px;
+    border-top: 1px solid var(--thred-panel-border);
+    pointer-events: none;
+  }
+
+  #sidebar::after {
+    content: "";
+    position: absolute;
+    inset: 0 -20px 0 auto;
+    width: 20px;
+    background: linear-gradient(to right, var(--thred-divider-shadow), transparent);
+    pointer-events: none;
+  }
+
+  #content-container {
+    padding-left: 48px;
   }
 
   #content-area {
-    padding-left: calc(var(--sidebar-width) + 6rem);
+    min-width: 0;
+    margin-inline: 0 auto;
   }
 }
 

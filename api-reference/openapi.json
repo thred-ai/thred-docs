@@ -218,8 +218,7 @@
                   "summary": "Search for answers",
                   "value": {
                     "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
-                    "results": 2,
-                    "timezone": "America/Chicago"
+                    "results": 2
                   }
                 },
                 "Structured answers": {
@@ -227,7 +226,6 @@
                   "value": {
                     "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
                     "results": 2,
-                    "timezone": "America/Chicago",
                     "output": {
                       "in_stock": {
                         "type": "boolean",
@@ -979,15 +977,6 @@
             "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$",
             "description": "Language tag such as en or fr-CA."
           },
-          "timezone": {
-            "type": "string",
-            "default": "UTC",
-            "example": "America/Chicago",
-            "description": "IANA timezone used to resolve relative dates against this search creation timestamp.",
-            "minLength": 1,
-            "maxLength": 100,
-            "pattern": "\\S"
-          },
           "output": {
             "type": "object",
             "minProperties": 1,
@@ -1036,8 +1025,7 @@
         },
         "example": {
           "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
-          "results": 2,
-          "timezone": "America/Chicago"
+          "results": 2
         }
       },
       "Search": {

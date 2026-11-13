@@ -55,4 +55,4 @@ Use `thred-phone-data/tailwind.config.ts`, `src/app/globals.css`, `PowerWorkspac
 
 Maple provides the full-height sidebar with the logo, search, and navigation inside it. Keep its native layout and a consistent 48px content inset; do not add the sidebar width to content padding. Style the active page through `aria-current="page"`. Check introduction, quickstart, and an endpoint page in both themes and at narrow widths after styling changes, including the hosted layout: the CLI preview can lag behind Mintlify's current renderer.
 
-On desktop, the native theme switcher sits below Website and Dashboard at the bottom of the sidebar. Reserve its space in the sidebar footer; keep Mintlify's native mobile placement.
+On desktop, the native theme switcher sits above Website and Dashboard at the bottom of the sidebar, with no divider between the control and links. Reserve its space in the sidebar footer; keep Mintlify's native mobile placement.

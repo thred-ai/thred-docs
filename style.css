@@ -345,26 +345,17 @@ pre, pre code {
     border-right-color: var(--thred-panel-border);
   }
 
-  /* Keep the native theme control below the sidebar's Website/Dashboard links. */
+  /* Keep the native theme control above the sidebar's Website/Dashboard links. */
   #sidebar [role="group"][aria-label="Theme preference"] {
     position: fixed;
     left: 32px;
-    bottom: 20px;
+    bottom: 92px;
     z-index: 1;
   }
 
   #sidebar > ul:last-child {
-    position: relative;
-    padding-bottom: 64px;
-  }
-
-  #sidebar > ul:last-child::after {
-    content: "";
-    position: absolute;
-    inset-inline: 0;
-    bottom: 56px;
-    border-top: 1px solid var(--thred-panel-border);
-    pointer-events: none;
+    padding-top: 64px;
+    padding-bottom: 12px;
   }
 
   #sidebar::after {

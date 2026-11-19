@@ -25,6 +25,9 @@ for (const [scope, name] of [["request", "SearchRequestError"], ["search", "Sear
 }
 ensure(schemas.Search.properties.error.$ref === "#/components/schemas/SearchOutcomeError", "Search outcome error reference");
 ensure(!("error" in schemas.SearchRecord.properties) && schemas.SourceError.deprecated === true, "Source errors are legacy delivery metadata only");
+const requestFields = ["query", "results", "identity", "identityId", "webhook_id"];
+ensure(same(Object.keys(schemas.SearchRequest.properties), requestFields) && schemas.SearchRequest.additionalProperties === false, "Exact five Search request properties");
+ensure(same(schemas.SearchRequest.required, ["query", "results"]), "Required Search request fields");
 ensure(schemas.SearchRequest.properties.results.maximum === 10 && !("records" in schemas.SearchRequest.properties), "Numeric request results remains unchanged");
 ensure(schemas.Search.properties.records.type === "array" && !("results" in schemas.Search.properties), "Response records has no results alias");
 ensure(same(Object.keys(schemas.Search.properties), ["id", "status", "timestamp", "duration", "records", "error"]), "Exact search snapshot fields");
@@ -35,7 +38,7 @@ ensure(schemas.Search.properties.id.pattern === "^sch_[a-z0-9-]+$", "Canonical s
 ensure(schemas.SearchRecord.properties.id.pattern === "^rcd_[a-z0-9_-]+$", "Canonical record ID prefix");
 ensure(schemas.Search.properties.timestamp.format === "date-time", "Acceptance timestamp format");
 ensure(schemas.Search.properties.duration.nullable && schemas.Search.properties.duration.minimum === 0, "Nullable elapsed search duration");
-ensure(same(Object.keys(schemas.SearchRecord.properties), ["id", "source", "content", "output"]), "Result omits per-source status, errors and finalization time");
+ensure(same(Object.keys(schemas.SearchRecord.properties), ["id", "source", "content"]), "Exact three Search record properties");
 ensure(schemas.SearchRecord.properties.content.type === "string" && schemas.SearchRecord.properties.content.minLength === 1 && !schemas.SearchRecord.properties.content.nullable, "Returned content is nonempty");
 ensure(same(schemas.SearchRecord.required, ["id", "source", "content"]), "Required result fields");
 ensure(schemas.SearchRecord.properties.source.$ref === "#/components/schemas/SearchSource", "Nested source reference");
@@ -74,6 +77,9 @@ function walk(value: unknown) {
   if (Array.isArray(value)) { value.forEach(walk); return; }
   if (!value || typeof value !== "object") return;
   const object = value as Record<string, any>;
+  if (typeof object.query === "string" && typeof object.results === "number") {
+    ensure(Object.keys(object).every(key => requestFields.includes(key)), "Example exact Search request fields");
+  }
   if (typeof object.$ref === "string" && object.$ref.startsWith("#/")) {
     let target: any = document;
     for (const key of object.$ref.slice(2).split("/")) target = target?.[key.replaceAll("~1", "/").replaceAll("~0", "~")];
@@ -96,7 +102,7 @@ function walk(value: unknown) {
   }
   if (source) {
     ensure(new RegExp(schemas.SearchRecord.properties.id.pattern).test(object.id), "Example valid canonical source ID");
-    ensure(["id", "source", "content"].every(key => key in object) && Object.keys(object).every(key => ["id", "source", "content", "output"].includes(key)), "Example exact source result fields");
+    ensure(same(Object.keys(object), ["id", "source", "content"]), "Example exact source result fields");
     ensure(same(Object.keys(object.source), ["details", "evidence", "call_metadata"]) && Array.isArray(object.source.evidence), "Example nested source shape");
     ensure(Object.keys(object.source.details).every(key => ["name", "url", "phone", "address"].includes(key)), "Example source details");
     for (const evidence of object.source.evidence) {

@@ -12,7 +12,7 @@ Use a public HTTPS hostname on port 443 that resolves to public IPv4 addresses. 
 
 | Event | Data |
 | --- | --- |
-| `search.result` | `{ id, result }`. `id` is the search ID; `result` is one supported answer with `{ id, source, content, output? }`. |
+| `search.result` | `{ id, result }`. `id` is the search ID; `result` is one supported answer with `{ id, source, content }`. |
 | `search.completed` | `{ id, status, timestamp, duration, results_url, error? }`. Processing has settled, including searches that failed. |
 
 Events contain `id`, `type`, `created_at` and `data`. Deduplicate deliveries using the outer event `id`. The search ID is `data.id` (`sch_…`); a result's record ID is `data.result.id` (`rcd_…`).

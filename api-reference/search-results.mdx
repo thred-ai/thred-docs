@@ -6,7 +6,7 @@ openapi: "api-reference/openapi.json GET /search/{id}/results"
 "twitter:image:alt": "Thred documentation: Get search records"
 ---
 
-Read supported answers from `records[].content`. Each record has a stable `rcd_` ID, source details, supporting evidence and call timing. Requested custom fields appear in `output` when supported.
+Read supported answers from `records[].content`. Each record has a stable `rcd_` ID, source details, supporting evidence and call timing.
 
 Every GET returns the full current set of records in relevance order. Replace the previous snapshot or reconcile by record ID. Continue polling only while the search is `running`.
 

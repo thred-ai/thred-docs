@@ -20,7 +20,6 @@ function ensure(condition: unknown, message: string): asserts condition {
 const expectedOperations = {
   "api-reference/create-search.mdx": "POST /v1/search",
   "api-reference/get-search.mdx": "GET /v1/search/{id}",
-  "api-reference/search-results.mdx": "GET /v1/search/{id}/results",
   "api-reference/cancel-search.mdx": "POST /v1/search/{id}/cancel",
   "api-reference/authentication.mdx": "GET /v1/auth/me",
   "api-reference/get-usage.mdx": "GET /v1/usage",
@@ -31,8 +30,8 @@ const httpMethods = new Set(["get", "put", "post", "delete", "options", "head", 
 const operations = Object.entries(document.paths).flatMap(([path, methods]) =>
   Object.keys(methods as object).filter(method => httpMethods.has(method)).map(method => `${method.toUpperCase()} ${path}`),
 );
-ensure(same(Object.keys(document.paths), expectedPaths), "Exact seven versioned public paths");
-ensure(same(operations, Object.values(expectedOperations)), "Exact seven public method/path operations");
+ensure(same(Object.keys(document.paths), expectedPaths), "Exact six versioned public paths");
+ensure(same(operations, Object.values(expectedOperations)), "Exact six public method/path operations");
 ensure(document.servers.length === 1 && document.servers[0].url === "https://api.thred.dev", "Origin-only public API server");
 
 const bindings: Record<string, string> = {};
@@ -43,7 +42,7 @@ for (const name of readdirSync(resolve(root, "api-reference")).filter(name => na
   const metadata = parseYaml(frontmatter[1]);
   if (metadata.openapi !== undefined) bindings[path] = metadata.openapi;
 }
-ensure(same(Object.keys(bindings), Object.keys(expectedOperations)), "Exact seven MDX operation pages");
+ensure(same(Object.keys(bindings), Object.keys(expectedOperations)), "Exact six MDX operation pages");
 for (const [path, operation] of Object.entries(expectedOperations)) {
   ensure(bindings[path] === `api-reference/openapi.json ${operation}`, `${path}: canonical MDX operation binding`);
 }
@@ -187,7 +186,7 @@ for (const [scope, heading] of [["request", "## Request errors"], ["search", "##
     ensure(catalog[match[1]].request!.status === Number(match[2]), `${match[1]}: guide HTTP mapping`);
   }
 }
-const documents = ["guides/errors.mdx", "guides/identities.mdx", "guides/webhooks.mdx", "guides/pricing-and-queues.mdx", "api-reference/create-search.mdx", "api-reference/get-search.mdx", "api-reference/search-results.mdx", "api-reference/cancel-search.mdx", "quickstart.mdx"];
+const documents = ["guides/errors.mdx", "guides/identities.mdx", "guides/webhooks.mdx", "guides/pricing-and-queues.mdx", "api-reference/create-search.mdx", "api-reference/get-search.mdx", "api-reference/cancel-search.mdx", "quickstart.mdx"];
 let links = 0;
 for (const name of documents) {
   const source = read(name);

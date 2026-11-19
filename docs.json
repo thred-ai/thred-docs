@@ -22,7 +22,6 @@
         "pages": [
           "api-reference/create-search",
           "api-reference/get-search",
-          "api-reference/search-results",
           "api-reference/cancel-search"
         ]
       },

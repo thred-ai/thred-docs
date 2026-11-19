@@ -8,7 +8,7 @@ openapi: "api-reference/openapi.json POST /v1/search"
 
 Send a `query` and a `results` count from 1–10. Thred finds relevant sources and calls them to retrieve the information.
 
-A new search returns HTTP `202` with `status: "running"` and a `sch_` search ID. Use that ID to [read the answers](/api-reference/search-results).
+A new search returns HTTP `202` with `status: "running"` and a `sch_` search ID. Use that ID to [read the answers](/api-reference/get-search).
 
 `results` limits how many distinct sources the search can call; it does not guarantee that many answers. Only sources with supported answers appear in the response's `records` array.
 

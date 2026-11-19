@@ -6,7 +6,9 @@ openapi: "api-reference/openapi.json GET /v1/search/{id}"
 "twitter:image:alt": "Thred documentation: Get a search"
 ---
 
-Read the current snapshot using the search `id` returned at creation. This endpoint returns the same response as [Get search records](/api-reference/search-results).
+Read the current status and all supported answers using the search `id` returned at creation.
+
+Answers are in `records[].content`, alongside source details, evidence and call timing. Each GET returns the full current snapshot; replace the previous snapshot or reconcile by record ID. Results are not paginated.
 
 | Status | Meaning |
 | --- | --- |

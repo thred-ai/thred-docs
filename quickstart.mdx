@@ -33,7 +33,7 @@ curl https://api.thred.dev/v1/search \
 ```bash
 export THRED_SEARCH_ID="SEARCH_ID_FROM_CREATE_RESPONSE"
 
-curl "https://api.thred.dev/v1/search/$THRED_SEARCH_ID/results" \
+curl "https://api.thred.dev/v1/search/$THRED_SEARCH_ID" \
   -H "Authorization: Bearer $THRED_API_KEY"
 ```
 
@@ -43,4 +43,4 @@ Read answers from `records[].content`, alongside their sources and supporting ev
 
 Repeat the GET while `status` is `running`. Stop when it becomes `completed` or `failed`. Each response contains the full current set of records, so replace the previous snapshot instead of appending it.
 
-See [Create a search](/api-reference/create-search) for options and [Get search records](/api-reference/search-results) for response fields. All examples use fictional sources.
+See [Create a search](/api-reference/create-search) for options and [Get a search](/api-reference/get-search) for response fields. All examples use fictional sources.

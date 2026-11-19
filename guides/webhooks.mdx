@@ -19,12 +19,12 @@ Events contain `id`, `type`, `created_at` and `data`. Deduplicate deliveries usi
 
 `search.completed` reports `completed` with no error when at least one supported record was retained; otherwise it reports `failed` with a [search error](/guides/errors). `data.timestamp` is search acceptance time, while `created_at` is event creation time. Durations and evidence offsets use milliseconds; calendar timestamps use ISO strings. Unavailable timing can be `null`.
 
-Fetch `data.results_url` using your API key and the API origin that accepted the search. It is a relative path such as `/v1/search/sch_…/results`. The response contains the full `records` snapshot; the event field remains `result`.
+Fetch `data.results_url` using your API key and the API origin that accepted the search. It is a relative path such as `/v1/search/sch_…`. The response contains the full `records` snapshot; the event field remains `result`.
 
-Queued deliveries retain their original format and may contain older IDs, statuses, second-based timing or unversioned result links. Fetch `/v1/search/{id}/results` to reconcile an older delivery; do not infer timing units from the numbers.
+Queued deliveries retain their original format and may contain older IDs, statuses, second-based timing or retired result links. Fetch `/v1/search/{id}` to reconcile an older delivery; do not infer timing units from the numbers.
 
 ## Verify and acknowledge
 
 `Thred-Signature` contains `t=<Unix seconds>,v1=<hex signature>`. Verify the signature using HMAC-SHA256 of `<timestamp>.<raw request body>` with the full signing secret, including its `whsec_` prefix. Compare signatures in constant time and reject stale timestamps before processing the JSON.
 
-After saving the event, return a `2xx` response within 10 seconds. Deliveries may arrive out of order and are retried up to eight total attempts. You can always [read saved results](/api-reference/search-results) through the API.
+After saving the event, return a `2xx` response within 10 seconds. Deliveries may arrive out of order and are retried up to eight total attempts. You can always [read saved results](/api-reference/get-search) through the API.

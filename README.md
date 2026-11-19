@@ -1,6 +1,6 @@
 # Thred API documentation
 
-Developers supply a query and source count to `/search`; Thred retrieves information over the phone and returns full snapshots of supported answer records. Caller identities are optional. Calls and result processing are automatic.
+Developers supply a query and source count to `/v1/search`; Thred retrieves information over the phone and returns full snapshots of supported answer records. Caller identities are optional. Calls and result processing are automatic.
 
 Mintlify documentation for Thred, a search API, at `https://api.thred.dev`.
 
@@ -37,7 +37,7 @@ Create, read and cancel return `{ id, status, timestamp, duration, records, erro
 
 Search status is `running`, `completed` or `failed`. A settled search completes with at least one record and no error; with zero records it fails with an appropriate error. System durations and evidence offsets use milliseconds; calendar timestamps are ISO strings. Preserve nullability and distinguish webhook `data.result` from snapshot `records`.
 
-Search routes use `/search`, without a `/v1` prefix. Account and utility routes retain `/v1/auth/me`, `/v1/usage` and `/v1/health`. The new public router does not expose Collect or Crawl; the old collection pages direct readers to Search.
+All public API routes use `/v1`: Search uses `/v1/search` and its subpaths; account and utility routes use `/v1/auth/me`, `/v1/usage` and `/v1/health`. Unversioned Search URLs are not supported. The new public router does not expose Collect or Crawl; the old collection pages direct readers to Search.
 
 Primary examples must show the normal successful flow: accepted creation, completed search and populated results. Keep cancellation examples on the cancellation endpoint. Use one consistent request and result count across the quickstart and reference, with matching IDs, record counts, timestamps and evidence. Inspect the rendered example selected by default as well as the source schema; structural validation cannot establish whether an example is useful.
 
@@ -51,7 +51,7 @@ npx --yes mint@4.3.24 broken-links
 git diff --check
 ```
 
-`validate` checks OpenAPI, content and the strict build. With the sibling backend and its dependencies available, `npm run check:search-errors` also audits the error catalog, schema references and example JSON offline.
+`validate` checks OpenAPI, content and the strict build. With the sibling backend and its dependencies available, `npm run check:search-errors` also audits the exact public routes, MDX operation bindings, error catalog, schema references and example JSON offline.
 
 Do not run tests or place API calls unless requested. Keep changes local unless publishing is requested.
 

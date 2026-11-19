@@ -224,7 +224,7 @@
         }
       }
     },
-    "/search": {
+    "/v1/search": {
       "post": {
         "tags": [
           "Search"
@@ -334,7 +334,7 @@
         }
       }
     },
-    "/search/{id}": {
+    "/v1/search/{id}": {
       "get": {
         "tags": [
           "Search"
@@ -350,7 +350,7 @@
               "type": "string",
               "pattern": "^(sch_|search_)[a-z0-9-]+$"
             },
-            "description": "Search identifier returned by POST /search, canonically prefixed sch_. Earlier search_ identifiers remain valid lookup aliases; returned IDs use sch_.",
+            "description": "Search identifier returned by POST /v1/search, canonically prefixed sch_. Earlier search_ identifiers remain valid lookup aliases; returned IDs use sch_.",
             "example": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
           }
         ],
@@ -657,7 +657,7 @@
         "description": "Read the latest status and answers for a search."
       }
     },
-    "/search/{id}/results": {
+    "/v1/search/{id}/results": {
       "get": {
         "tags": [
           "Search"
@@ -674,7 +674,7 @@
               "type": "string",
               "pattern": "^(sch_|search_)[a-z0-9-]+$"
             },
-            "description": "Search identifier returned by POST /search, canonically prefixed sch_. Earlier search_ identifiers remain valid lookup aliases; returned IDs use sch_.",
+            "description": "Search identifier returned by POST /v1/search, canonically prefixed sch_. Earlier search_ identifiers remain valid lookup aliases; returned IDs use sch_.",
             "example": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
           }
         ],
@@ -980,7 +980,7 @@
         }
       }
     },
-    "/search/{id}/cancel": {
+    "/v1/search/{id}/cancel": {
       "post": {
         "tags": [
           "Search"
@@ -997,7 +997,7 @@
               "type": "string",
               "pattern": "^(sch_|search_)[a-z0-9-]+$"
             },
-            "description": "Search identifier returned by POST /search, canonically prefixed sch_. Earlier search_ identifiers remain valid lookup aliases; returned IDs use sch_.",
+            "description": "Search identifier returned by POST /v1/search, canonically prefixed sch_. Earlier search_ identifiers remain valid lookup aliases; returned IDs use sch_.",
             "example": "sch_15b2a4b8-fabc-41cc-8e38-2a4763db600e"
           }
         ],

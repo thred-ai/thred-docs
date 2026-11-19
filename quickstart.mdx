@@ -17,7 +17,7 @@ export THRED_API_KEY="YOUR_API_KEY"
 ## 2. Create a search
 
 ```bash
-curl https://api.thred.dev/search \
+curl https://api.thred.dev/v1/search \
   -H "Authorization: Bearer $THRED_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -33,7 +33,7 @@ curl https://api.thred.dev/search \
 ```bash
 export THRED_SEARCH_ID="SEARCH_ID_FROM_CREATE_RESPONSE"
 
-curl "https://api.thred.dev/search/$THRED_SEARCH_ID/results" \
+curl "https://api.thred.dev/v1/search/$THRED_SEARCH_ID/results" \
   -H "Authorization: Bearer $THRED_API_KEY"
 ```
 

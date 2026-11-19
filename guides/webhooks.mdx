@@ -8,17 +8,23 @@ description: "Receive search results in your app without polling."
 
 Add an endpoint in [Dashboard](https://dashboard.thred.ai) → Settings → Webhooks. Save its ID and signing secret, then include the ID as `webhook_id` when creating a search in the same environment.
 
+Use a public HTTPS hostname on port 443 that resolves to public IPv4 addresses. Redirects are not followed.
+
 | Event | Data |
 | --- | --- |
-| `search.result` | `{search_id, result}` for each published result. |
-| `search.completed` | The search object with its final `status`. |
+| `search.result` | `{ id, result }`. `id` is the search ID; `result` is one supported answer with `{ id, source, content, output? }`. |
+| `search.completed` | `{ id, status, timestamp, duration, results_url, error? }`. Processing has settled, including searches that failed. |
 
-Events contain `id`, `type`, `created_at` and `data`. Use `id` to deduplicate retries. `search.completed` includes all terminal states; check `data.status`.
+Events contain `id`, `type`, `created_at` and `data`. Deduplicate deliveries using the outer event `id`. The search ID is `data.id` (`sch_…`); a result's record ID is `data.result.id` (`rcd_…`).
+
+`search.completed` reports `completed` with no error when at least one supported record was retained; otherwise it reports `failed` with a [search error](/guides/errors). `data.timestamp` is search acceptance time, while `created_at` is event creation time. Durations and evidence offsets use milliseconds; calendar timestamps use ISO strings. Unavailable timing can be `null`.
+
+Fetch `data.results_url` using your API key and the API origin that accepted the search. It is a relative path such as `/search/sch_…/results`. The response contains the full `records` snapshot; the event field remains `result`.
+
+Queued deliveries retain their original format and may contain older IDs, statuses or second-based timing. Fetch the current API snapshot to reconcile an older delivery; do not infer timing units from the numbers.
 
 ## Verify and acknowledge
 
 `Thred-Signature` contains `t=<Unix seconds>,v1=<hex signature>`. Verify the signature using HMAC-SHA256 of `<timestamp>.<raw request body>` with the full signing secret, including its `whsec_` prefix. Compare signatures in constant time and reject stale timestamps before processing the JSON.
 
 After saving the event, return a `2xx` response within 10 seconds. Deliveries may arrive out of order and are retried up to eight total attempts. You can always [read saved results](/api-reference/search-results) through the API.
-
-Endpoints must use a public DNS hostname on HTTPS port 443 resolving to public IPv4. Redirects are not followed.

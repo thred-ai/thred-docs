@@ -1,0 +1,50 @@
+---
+title: "Search errors"
+description: "Handle request failures and errors in saved search results."
+"og:image": "https://www.thred.dev/images/og/guides/errors.png"
+"og:image:alt": "Thred documentation: Search errors"
+"twitter:image:alt": "Thred documentation: Search errors"
+---
+
+Handle errors by `code`; use `message` to explain the problem to the user.
+
+```json
+{
+  "code": "internal_error",
+  "message": "The search could not finish correctly."
+}
+```
+
+## Request errors
+
+A failed HTTP request returns an `error` object containing `code` and `message`.
+
+| Code | HTTP | Meaning |
+| --- | --- | --- |
+| `invalid_request` | 400 | Correct the indicated request field or JSON body. |
+| `unsupported_parameter` | 400 | Remove `cursor` and `limit`; search results are full snapshots. |
+| `request_too_large` | 413 | Reduce the request to the 64 KiB limit. |
+| `unauthorized` | 401 | Supply a valid API key for the intended environment. |
+| `forbidden` | 403 | The requested action is not permitted. |
+| `not_found` | 404 | The resource or endpoint is unavailable in this workspace and environment. |
+| `idempotency_conflict` | 409 | This idempotency key was used with different parameters. |
+| `payment_required` | 402 | Add funds before starting another search. |
+| `rate_limited` | 429 | Search capacity is full; honor `Retry-After` when supplied. |
+| `service_unavailable` | 503 | Search is currently unavailable. |
+| `internal_error` | 500 | An unexpected technical error prevented the request from completing. |
+
+Keep the `X-Request-ID` response header, when supplied, for troubleshooting.
+
+## Errors inside an accepted search
+
+A successful GET returns HTTP `200` even when the saved search has `status: "failed"`. Its top-level `error` explains why no supported records were returned.
+
+| Search code | Meaning |
+| --- | --- |
+| `preparation_failed` | The search could not prepare its questions. |
+| `discovery_failed` | Source discovery could not finish. |
+| `deadline_exceeded` | The search reached its deadline without returning a supported record. |
+| `internal_error` | The search could not finish correctly. |
+| `no_results` | Processing ended without any supported returned records. |
+
+Poll only while `status` is `running`. A settled search with at least one supported record is `completed` without an error, including after a deadline or cancellation. Individual records have no error field. See [Get a search](/api-reference/get-search) for the lifecycle.

@@ -2,7 +2,8 @@
   "name": "thred-docs",
   "private": true,
   "scripts": {
-    "og:generate": "node scripts/generate-og.cjs"
+    "og:generate": "node scripts/generate-og.cjs",
+    "check:search-errors": "../thred-data-backend/node_modules/.bin/tsx scripts/check-search-errors.ts"
   },
   "devDependencies": {
     "sharp": "0.34.5",

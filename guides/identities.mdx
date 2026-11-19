@@ -1,0 +1,57 @@
+---
+title: "Identities"
+description: "Choose who makes your calls, who they represent, and how they sound."
+"og:image": "https://www.thred.dev/images/og/guides/identities.png"
+"og:image:alt": "Thred documentation: Identities"
+"twitter:image:alt": "Thred documentation: Identities"
+---
+
+An identity defines your caller's name, phone number, voice and who they represent. Use a saved `identityId` or a temporary `identity`. Omit both to use the default for your API key's environment.
+
+Supply only one selector; using both returns `400 invalid_request`.
+
+## Use a saved identity
+
+Create an identity in [Dashboard → Settings → Identities](https://dashboard.thred.ai/w/development/settings/identities) and copy its ID. Use an identity from the same workspace and environment as your API key.
+
+```json
+{
+  "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
+  "results": 2,
+  "identityId": "YOUR_IDENTITY_ID"
+}
+```
+
+## Use a temporary identity
+
+An inline identity applies only to this search. It does not create a saved identity or inherit values from the environment default.
+
+```json
+{
+  "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
+  "results": 2,
+  "identity": {
+    "name": "Alex",
+    "behalfOf": {
+      "name": "Jordan",
+      "relationship": "my colleague"
+    }
+  }
+}
+```
+
+Alex is the caller; Jordan is the person Alex represents. The caller number is selected automatically and the catalog's default voice is used.
+
+| Field | Accepted value | When omitted |
+| --- | --- | --- |
+| `phoneNumber` | `"auto"` or an enabled E.164 caller number in your workspace and environment | `"auto"` |
+| `name` | `"auto"` or a non-empty name, up to 100 characters | `"auto"` |
+| `behalfOf` | An object with required `name` and optional `relationship` | No beneficiary |
+| `voice` | An active voice key from the dashboard catalog | Current default preset |
+| `description` | Non-empty caller context, up to 1,000 characters | No description |
+
+`behalfOf.name` accepts up to 100 characters; `relationship` accepts up to 200 and defaults to `"my colleague"`. Text limits apply after trimming. Omit optional fields instead of sending null or empty values; unknown fields are rejected.
+
+For `voice`, use **Copy voice key** in the dashboard's Voice selector. Display names and raw provider voice IDs are not accepted. Accepted searches retain their identity configuration and voice; edits apply to future searches.
+
+Older `callAgent` and `callAgentId` fields are rejected. Replace them with `identity` or a new `identityId` copied from Settings.

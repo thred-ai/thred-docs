@@ -6,6 +6,16 @@ openapi: "api-reference/openapi.json GET /search/{id}"
 "twitter:image:alt": "Thred documentation: Get a search"
 ---
 
-Read a search's status and progress using the `id` returned at creation.
+Read the current snapshot using the search `id` returned at creation. This endpoint returns the same response as [Get search records](/api-reference/search-results).
 
-`completed` means processing has finished. Read the answers from [Get search results](/api-reference/search-results); results are also available while the search is running.
+| Status | Meaning |
+| --- | --- |
+| `running` | The search is still working. Continue polling. |
+| `completed` | The search finished with at least one supported answer. |
+| `failed` | The search finished without a supported answer. Check `error`. |
+
+Completion means an answer was found, even if some requested facts remain unknown. A deadline or cancellation with retained answers also returns `completed`, without an error.
+
+A successful read returns HTTP `200`, including when the saved search has `status: "failed"`. See [Search errors](/guides/errors) for error codes.
+
+Search IDs begin with `sch_`. Older `search_` IDs remain accepted in search lookup and cancellation routes; responses return the canonical `sch_` ID.

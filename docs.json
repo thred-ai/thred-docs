@@ -29,7 +29,10 @@
       {
         "group": "Guides",
         "pages": [
-          "guides/webhooks"
+          "guides/identities",
+          "guides/webhooks",
+          "guides/pricing-and-queues",
+          "guides/errors"
         ]
       },
       {
@@ -78,5 +81,11 @@
   },
   "fonts": {
     "family": "Instrument Sans"
-  }
+  },
+  "redirects": [
+    {
+      "source": "/guides/call-agents",
+      "destination": "/guides/identities"
+    }
+  ]
 }

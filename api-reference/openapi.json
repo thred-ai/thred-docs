@@ -1608,30 +1608,6 @@
             "pattern": "\\S",
             "description": "Active saved identity ID in the same workspace and API environment. Copy it from Settings → Identities. Mutually exclusive with identity; invalid or archived IDs are rejected."
           },
-          "call_reason": {
-            "type": "string",
-            "enum": [
-              "public",
-              "customer",
-              null
-            ],
-            "default": "public",
-            "description": "Purpose of the call. Omitted or null uses public; this does not make results publicly accessible.",
-            "nullable": true
-          },
-          "location": {
-            "type": "string",
-            "maxLength": 300,
-            "minLength": 1,
-            "description": "Geographic context for the search.",
-            "pattern": "\\S"
-          },
-          "language": {
-            "type": "string",
-            "example": "en",
-            "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$",
-            "description": "Language tag such as en or fr-CA."
-          },
           "output": {
             "type": "object",
             "minProperties": 1,
@@ -1670,13 +1646,6 @@
             "minLength": 1,
             "maxLength": 200,
             "pattern": "\\S"
-          },
-          "metadata": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Custom metadata stored with the search, up to 4000 UTF-8 bytes of JSON. Omitted or null uses an empty object. Not echoed in responses or webhooks.",
-            "default": {},
-            "nullable": true
           }
         },
         "example": {
@@ -2183,7 +2152,7 @@
         }
       },
       "TooLarge": {
-        "description": "The request body exceeds 64 KiB. Shorten the query, output descriptions, identity details, or metadata.",
+        "description": "The request body exceeds 64 KiB. Shorten the query, output descriptions, or identity details.",
         "content": {
           "application/json": {
             "schema": {

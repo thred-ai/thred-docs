@@ -12,8 +12,6 @@ A new search returns HTTP `202` with `status: "running"` and a `sch_` search ID.
 
 `results` limits how many distinct sources the search can call; it does not guarantee that many answers. Only sources with supported answers appear in the response's `records` array.
 
-Optional `output` fields add structured values alongside the text answer. Choose **Structured answers** in the example menu to see the format.
-
 Use `identityId` for a saved caller or `identity` for temporary configuration. Omit both to use your environment's default. See [Identities](/guides/identities).
 
 Searches may wait in a queue and have a two-hour deadline from acceptance. See [Pricing and limits](/guides/pricing-and-queues) for details and [Search errors](/guides/errors) for request failures.

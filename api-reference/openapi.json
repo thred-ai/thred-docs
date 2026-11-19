@@ -247,23 +247,6 @@
                     "results": 2
                   }
                 },
-                "Structured answers": {
-                  "summary": "Request structured fields",
-                  "value": {
-                    "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
-                    "results": 2,
-                    "output": {
-                      "in_stock": {
-                        "type": "boolean",
-                        "description": "Whether the Nintendo Switch 2 is currently in stock."
-                      },
-                      "pickup_details": {
-                        "type": "string",
-                        "description": "If in stock, same-day pickup availability and the latest local pickup time."
-                      }
-                    }
-                  }
-                },
                 "Temporary identity": {
                   "summary": "Use an inline identity",
                   "value": {
@@ -382,7 +365,7 @@
                 "examples": {
                   "Completed search": {
                     "summary": "Completed search",
-                    "description": "Two complete answers from fictional sources. No custom output was requested.",
+                    "description": "Two complete answers from fictional sources.",
                     "value": {
                       "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
                       "status": "completed",
@@ -440,77 +423,9 @@
                       ]
                     }
                   },
-                  "Structured answers": {
-                    "summary": "Completed search with structured fields",
-                    "description": "The same completed search with the in_stock and pickup_details fields requested in output.",
-                    "value": {
-                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                      "status": "completed",
-                      "timestamp": "2026-11-12T15:00:00.000Z",
-                      "duration": 185000,
-                      "records": [
-                        {
-                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
-                          "source": {
-                            "details": {
-                              "name": "Example Electronics",
-                              "url": "https://example.com/electronics",
-                              "phone": "+15125550123",
-                              "address": "Austin, TX"
-                            },
-                            "evidence": [
-                              {
-                                "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
-                                "start": 18200,
-                                "end": 23600
-                              }
-                            ],
-                            "call_metadata": {
-                              "duration": 30000,
-                              "placed_at": "2026-11-12T15:01:25.000Z",
-                              "picked_up_at": "2026-11-12T15:01:35.000Z"
-                            }
-                          },
-                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
-                          "output": {
-                            "in_stock": true,
-                            "pickup_details": "Pickup today until 6 p.m. Central Time."
-                          }
-                        },
-                        {
-                          "id": "rcd_k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
-                          "source": {
-                            "details": {
-                              "name": "Example Games",
-                              "url": "https://example.com/games",
-                              "phone": "+15125550124",
-                              "address": "Austin, TX"
-                            },
-                            "evidence": [
-                              {
-                                "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
-                                "start": 18200,
-                                "end": 23600
-                              }
-                            ],
-                            "call_metadata": {
-                              "duration": 30000,
-                              "placed_at": "2026-11-12T15:02:20.000Z",
-                              "picked_up_at": "2026-11-12T15:02:30.000Z"
-                            }
-                          },
-                          "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time.",
-                          "output": {
-                            "in_stock": true,
-                            "pickup_details": "Pickup today until 8 p.m. Central Time."
-                          }
-                        }
-                      ]
-                    }
-                  },
                   "Negative answer": {
                     "summary": "A supported negative answer is complete",
-                    "description": "Pickup details apply only if stock is available. The inapplicable field is omitted.",
+                    "description": "A confirmed lack of stock is a supported answer.",
                     "value": {
                       "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
                       "status": "completed",
@@ -539,10 +454,7 @@
                               "picked_up_at": "2026-11-12T15:01:35.000Z"
                             }
                           },
-                          "content": "Example Electronics does not have the Nintendo Switch 2 in stock.",
-                          "output": {
-                            "in_stock": false
-                          }
+                          "content": "Example Electronics does not have the Nintendo Switch 2 in stock."
                         }
                       ]
                     }
@@ -777,7 +689,7 @@
                 "examples": {
                   "Completed search": {
                     "summary": "Completed search",
-                    "description": "Two complete answers from fictional sources. No custom output was requested.",
+                    "description": "Two complete answers from fictional sources.",
                     "value": {
                       "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
                       "status": "completed",
@@ -835,77 +747,9 @@
                       ]
                     }
                   },
-                  "Structured answers": {
-                    "summary": "Completed search with structured fields",
-                    "description": "The same completed search with the in_stock and pickup_details fields requested in output.",
-                    "value": {
-                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                      "status": "completed",
-                      "timestamp": "2026-11-12T15:00:00.000Z",
-                      "duration": 185000,
-                      "records": [
-                        {
-                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
-                          "source": {
-                            "details": {
-                              "name": "Example Electronics",
-                              "url": "https://example.com/electronics",
-                              "phone": "+15125550123",
-                              "address": "Austin, TX"
-                            },
-                            "evidence": [
-                              {
-                                "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
-                                "start": 18200,
-                                "end": 23600
-                              }
-                            ],
-                            "call_metadata": {
-                              "duration": 30000,
-                              "placed_at": "2026-11-12T15:01:25.000Z",
-                              "picked_up_at": "2026-11-12T15:01:35.000Z"
-                            }
-                          },
-                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
-                          "output": {
-                            "in_stock": true,
-                            "pickup_details": "Pickup today until 6 p.m. Central Time."
-                          }
-                        },
-                        {
-                          "id": "rcd_k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
-                          "source": {
-                            "details": {
-                              "name": "Example Games",
-                              "url": "https://example.com/games",
-                              "phone": "+15125550124",
-                              "address": "Austin, TX"
-                            },
-                            "evidence": [
-                              {
-                                "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
-                                "start": 18200,
-                                "end": 23600
-                              }
-                            ],
-                            "call_metadata": {
-                              "duration": 30000,
-                              "placed_at": "2026-11-12T15:02:20.000Z",
-                              "picked_up_at": "2026-11-12T15:02:30.000Z"
-                            }
-                          },
-                          "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time.",
-                          "output": {
-                            "in_stock": true,
-                            "pickup_details": "Pickup today until 8 p.m. Central Time."
-                          }
-                        }
-                      ]
-                    }
-                  },
                   "Negative answer": {
                     "summary": "A supported negative answer is complete",
-                    "description": "Pickup details apply only if stock is available. The inapplicable field is omitted.",
+                    "description": "A confirmed lack of stock is a supported answer.",
                     "value": {
                       "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
                       "status": "completed",
@@ -934,10 +778,7 @@
                               "picked_up_at": "2026-11-12T15:01:35.000Z"
                             }
                           },
-                          "content": "Example Electronics does not have the Nintendo Switch 2 in stock.",
-                          "output": {
-                            "in_stock": false
-                          }
+                          "content": "Example Electronics does not have the Nintendo Switch 2 in stock."
                         }
                       ]
                     }
@@ -1608,38 +1449,6 @@
             "pattern": "\\S",
             "description": "Active saved identity ID in the same workspace and API environment. Copy it from Settings → Identities. Mutually exclusive with identity; invalid or archived IDs are rejected."
           },
-          "output": {
-            "type": "object",
-            "minProperties": 1,
-            "maxProperties": 20,
-            "additionalProperties": {
-              "type": "object",
-              "required": [
-                "type",
-                "description"
-              ],
-              "additionalProperties": false,
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "enum": [
-                    "string",
-                    "string[]",
-                    "number",
-                    "integer",
-                    "boolean"
-                  ]
-                },
-                "description": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 1000,
-                  "pattern": "\\S"
-                }
-              }
-            },
-            "description": "Optional custom fields: at most 20 fields and 12,000 characters of JSON. Omit for text answers without output. Field names must contain 1–120 characters and cannot be `__proto__`, `prototype`, or `constructor`. Descriptions must contain non-whitespace text."
-          },
           "webhook_id": {
             "type": "string",
             "description": "An enabled webhook endpoint in the same workspace/environment.",
@@ -1792,11 +1601,6 @@
             "type": "string",
             "minLength": 1,
             "description": "Nonempty supported answer content. Sources without supported content and evidence are omitted from records."
-          },
-          "output": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Supported values for requested custom fields. Omitted if none were requested or supported. Unknown or inapplicable fields are omitted. False, zero and confirmed empty lists are valid values."
           }
         },
         "example": {
@@ -2122,7 +1926,7 @@
     },
     "responses": {
       "BadRequest": {
-        "description": "Invalid JSON, query, options, output fields, cursor, webhook, or date range. Inspect error.code and error.message.",
+        "description": "Invalid JSON, query, options, cursor, webhook, or date range. Inspect error.code and error.message.",
         "content": {
           "application/json": {
             "schema": {
@@ -2152,7 +1956,7 @@
         }
       },
       "TooLarge": {
-        "description": "The request body exceeds 64 KiB. Shorten the query, output descriptions, or identity details.",
+        "description": "The request body exceeds 64 KiB. Shorten the query or identity details.",
         "content": {
           "application/json": {
             "schema": {

@@ -1,7 +1,8 @@
 /** Offline catalog/OpenAPI/documentation parity audit. No API or provider calls. */
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { parse as parseYaml } from "yaml";
 import { SEARCH_ERROR_CATALOG } from "../../thred-data-backend/src/search-errors";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -15,6 +16,38 @@ const same = (left: string[], right: string[]) => JSON.stringify([...left].sort(
 function ensure(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
+
+const expectedOperations = {
+  "api-reference/create-search.mdx": "POST /v1/search",
+  "api-reference/get-search.mdx": "GET /v1/search/{id}",
+  "api-reference/search-results.mdx": "GET /v1/search/{id}/results",
+  "api-reference/cancel-search.mdx": "POST /v1/search/{id}/cancel",
+  "api-reference/authentication.mdx": "GET /v1/auth/me",
+  "api-reference/get-usage.mdx": "GET /v1/usage",
+  "api-reference/health.mdx": "GET /v1/health",
+};
+const expectedPaths = Object.values(expectedOperations).map(operation => operation.split(" ")[1]);
+const httpMethods = new Set(["get", "put", "post", "delete", "options", "head", "patch", "trace"]);
+const operations = Object.entries(document.paths).flatMap(([path, methods]) =>
+  Object.keys(methods as object).filter(method => httpMethods.has(method)).map(method => `${method.toUpperCase()} ${path}`),
+);
+ensure(same(Object.keys(document.paths), expectedPaths), "Exact seven versioned public paths");
+ensure(same(operations, Object.values(expectedOperations)), "Exact seven public method/path operations");
+ensure(document.servers.length === 1 && document.servers[0].url === "https://api.thred.dev", "Origin-only public API server");
+
+const bindings: Record<string, string> = {};
+for (const name of readdirSync(resolve(root, "api-reference")).filter(name => name.endsWith(".mdx"))) {
+  const path = `api-reference/${name}`;
+  const frontmatter = read(path).match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  ensure(frontmatter, `${path}: missing frontmatter`);
+  const metadata = parseYaml(frontmatter[1]);
+  if (metadata.openapi !== undefined) bindings[path] = metadata.openapi;
+}
+ensure(same(Object.keys(bindings), Object.keys(expectedOperations)), "Exact seven MDX operation pages");
+for (const [path, operation] of Object.entries(expectedOperations)) {
+  ensure(bindings[path] === `api-reference/openapi.json ${operation}`, `${path}: canonical MDX operation binding`);
+}
+const isSearchPath = (path: string) => path === "/v1/search" || path.startsWith("/v1/search/");
 
 for (const [scope, name] of [["request", "SearchRequestError"], ["search", "SearchOutcomeError"], ["source", "SourceError"]] as const) {
   const schema = schemas[name];
@@ -131,14 +164,14 @@ walk(document);
 
 for (const [path, methods] of Object.entries(document.paths) as [string, Record<string, any>][]) {
   for (const operation of Object.values(methods)) {
-    if (path.startsWith("/search")) for (const parameter of operation.parameters ?? []) {
+    if (isSearchPath(path)) for (const parameter of operation.parameters ?? []) {
       if (parameter.in !== "path" || parameter.name !== "id") continue;
       ensure(parameter.schema.pattern === "^(sch_|search_)[a-z0-9-]+$", `${path}: canonical ID and legacy alias input`);
       ensure(typeof parameter.example === "string" && new RegExp(schemas.Search.properties.id.pattern).test(parameter.example), `${path}: canonical path example`);
     }
     for (const [status, response] of Object.entries(operation.responses ?? {}) as [string, any][]) {
       if (Number(status) < 400) continue;
-      if (path.startsWith("/search")) ensure(response.$ref === `#/components/responses/SearchHttp${status}`, `${path}: scoped HTTP ${status} response`);
+      if (isSearchPath(path)) ensure(response.$ref === `#/components/responses/SearchHttp${status}`, `${path}: scoped HTTP ${status} response`);
       else ensure(!String(response.$ref).includes("SearchHttp"), `${path}: unrelated error contract changed`);
     }
   }
@@ -167,4 +200,4 @@ for (const name of documents) {
 }
 const navigation = JSON.parse(read("docs.json")).navigation.groups.flatMap((group: any) => group.pages);
 ensure(navigation.includes("guides/errors"), "Error guide navigation");
-console.log(`PASS: ${Object.keys(catalog).length} canonical codes; three scoped schemas; ${statuses.length} HTTP mappings; ${refs} OpenAPI references; ${snapshots} snapshot and ${sourceResults} source examples; ${documents.length} MDX documents/${links} local links.`);
+console.log(`PASS: ${operations.length} public operations/MDX bindings; ${Object.keys(catalog).length} canonical codes; three scoped schemas; ${statuses.length} HTTP mappings; ${refs} OpenAPI references; ${snapshots} snapshot and ${sourceResults} source examples; ${documents.length} MDX documents/${links} local links.`);

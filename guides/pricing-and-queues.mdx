@@ -1,36 +1,45 @@
 ---
 title: "Pricing and limits"
-description: "Configured record billing, search limits, and queued work."
+description: "$0.15 per record. What counts and how search limits work."
 "og:image": "https://www.thred.dev/images/og/guides/pricing-and-queues.png"
 "og:image:alt": "Thred documentation: Pricing and limits"
 "twitter:image:alt": "Thred documentation: Pricing and limits"
 ---
 
-## Record billing
+Thred costs **\$0.15 USD per returned record**.
 
-Check Billing for your workspace's available plan, credit, and payment settings. [Get usage](/api-reference/get-usage) reports whether record billing is enabled and the configured record price in `record_billing.current_price_minor` (USD cents). A configured price alone does not mean billing is active or ready to accept a paid search.
+## What is a record?
 
-When record billing is enabled and ready, accepting a search reserves the configured rate for each requested source. The final charge uses the rate saved at acceptance and counts supported answer records, including records that answer only some requested facts. Sources without supported answers are omitted and incur no record charge. Call duration and call status do not determine record price.
+A record is one source's answer to your query, gathered over the phone. It appears in `records` with source details and evidence supporting the answer.
 
-Cancellation or expiry preserves charges for eligible answers finalized before the cutoff and releases unused reservations after final processing. Historical searches retain their accepted rates and billing policies. `billed_minor` reports saved incurred cost, including usage awaiting reconciliation; it is not an invoice payment status.
+One record can contain several facts. A source that confirms availability, price and pickup hours produces one record.
 
-## Queued searches
+## What counts?
 
-Each search accepts `results` from 1–10. Search-start allowances apply to the first start of discovery in a rolling 60-second window, shared across keys and environments in a workspace.
+| What the source provides | Records | Cost |
+| --- | --- | --- |
+| Answers to all requested facts | 1 | \$0.15 |
+| Answers to some facts, with others still unknown | 1 | \$0.15 |
+| A confirmed negative answer, such as “That item is unavailable” | 1 | \$0.15 |
+| No supported answer, including only a refusal or “I don't know” | 0 | \$0.00 |
+
+For example, a search that contacts 5 sources and returns 3 records costs **\$0.45**. If no records are returned, the cost is **\$0.00**. Reading the same search again does not create new charges.
+
+## Search limits
+
+Set `results` from **1–10** to limit how many distinct sources a search can call. The number of returned records depends on how many sources provide supported answers.
 
 | Plan | Default search starts per minute |
 | --- | --- |
 | Free | 5 |
 | Pay as you go | 30 |
 
-The workspace's configured plan determines its actual allowance. Pay as you go requires an eligible saved card; otherwise the Free allowance applies. These allowances do not guarantee call throughput.
+These allowances are shared across your workspace's API keys and environments. Pay as you go requires an eligible saved card.
 
-Accepted requests return `202`. Work waiting for a start allowance or shared call capacity remains `running`; waiting alone does not return `429`. Queue time counts toward the search deadline.
+## Queued searches
 
-Default backlog bounds are 1,000 unfinished searches or 10,000 requested sources per workspace, and 10,000 searches or 100,000 sources across the service. These operational bounds can be adjusted. Reaching one returns `429 rate_limited`, `Retry-After: 60`, and `X-Thred-Overload-Reason: search_backlog_limit` without accepting the search or reserving credit.
+Accepted searches return `202` and remain `running` while waiting to start or make calls. Work proceeds as capacity becomes available.
 
-## Two-hour work deadline
+Each search has **two hours from acceptance**, including time spent waiting. At the deadline, unfinished work stops and supported answers already collected are retained.
 
-New searches have two hours from acceptance for discovery, queue waiting, calls, and answer collection. Starting work does not reset the deadline.
-
-At the cutoff, new work stops and active calls receive cancellation. Eligible answers finalized before the cutoff are retained. After final processing, a search with records is `completed` without a top-level `error`; an empty timeout is `failed` with `deadline_exceeded`. Bounded final processing and [webhook delivery retries](/guides/webhooks) can continue after the deadline.
+Use [Get a search](/api-reference/get-search) to read the current status and records. See [Search errors](/guides/errors) for error handling.

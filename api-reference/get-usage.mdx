@@ -8,4 +8,14 @@ openapi: "api-reference/openapi.json GET /v1/usage"
 
 Read daily activity for your workspace and environment. Dates use UTC; omit them for today or request up to 31 inclusive days.
 
-`searches`, `attempted_calls` and `answered_calls` use the search's creation date. Other counters use each call's creation date. These are activity counters, not billing totals.
+`searches`, `attempted_calls`, `answered_calls`, billing record counts, and `billed_minor` use the search's acceptance date. `requested`, call outcomes, and `elapsed_job_ms` use each call's creation date.
+
+`completed` counts calls with verified live-human speech from the destination. Settled calls without it, including IVR-only and voicemail-only calls, are `failed`. Active calls count toward neither. `answered_calls` counts destination pickup, including automated systems, so it can differ from `completed`.
+
+When a day's `call_outcomes_status` is `unavailable`, its `completed` and `failed` counts are `null`. The response-level status is `ready` only when every requested day is ready. Other metrics remain available independently.
+
+`record_billing.billed_minor` is saved incurred cost in USD cents, not an invoice payment status. `billable_records` counts records charged under their accepted billing policies. The `returned_records`, `completed_records`, `partial_records`, and `legacy_records` breakdown preserves those policies; these counters do not measure all answer records returned by searches. Use saved costs rather than multiplying historical counts by today's rate.
+
+`record_billing.enabled` reports the billing enablement flag. `current_price_minor` is the configured rate and is `null` when the plan catalog is unavailable. Neither a configured rate nor `rate_binding_ready` alone guarantees that a paid search can be accepted.
+
+`elapsed_job_ms` uses milliseconds. `billed_ms` is always `null`; elapsed duration does not determine record cost. See [Pricing and limits](/guides/pricing-and-queues).

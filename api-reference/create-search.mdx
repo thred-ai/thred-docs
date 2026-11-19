@@ -6,8 +6,14 @@ openapi: "api-reference/openapi.json POST /search"
 "twitter:image:alt": "Thred documentation: Create a search"
 ---
 
-Send a `query` and `results` count. The API returns HTTP `202` with an `id`; use it to [read the answers](/api-reference/search-results).
+Send a `query` and a `results` count from 1–10. Thred finds relevant sources and calls them to retrieve the information.
+
+A new search returns HTTP `202` with `status: "running"` and a `sch_` search ID. Use that ID to [read the answers](/api-reference/search-results).
+
+`results` limits how many distinct sources the search can call; it does not guarantee that many answers. Only sources with supported answers appear in the response's `records` array.
 
 Optional `output` fields add structured values alongside the text answer. Choose **Structured answers** in the example menu to see the format.
 
-`results` accepts 1–100 and caps call attempts to distinct sources; the number of complete answers may be smaller.
+Use `identityId` for a saved caller or `identity` for temporary configuration. Omit both to use your environment's default. See [Identities](/guides/identities).
+
+Searches may wait in a queue and have a two-hour deadline from acceptance. See [Pricing and limits](/guides/pricing-and-queues) for details and [Search errors](/guides/errors) for request failures.

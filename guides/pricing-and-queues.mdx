@@ -1,0 +1,36 @@
+---
+title: "Pricing and limits"
+description: "Configured record billing, search limits, and queued work."
+"og:image": "https://www.thred.dev/images/og/guides/pricing-and-queues.png"
+"og:image:alt": "Thred documentation: Pricing and limits"
+"twitter:image:alt": "Thred documentation: Pricing and limits"
+---
+
+## Record billing
+
+Check Billing for your workspace's available plan, credit, and payment settings. [Get usage](/api-reference/get-usage) reports whether record billing is enabled and the configured record price in `record_billing.current_price_minor` (USD cents). A configured price alone does not mean billing is active or ready to accept a paid search.
+
+When record billing is enabled and ready, accepting a search reserves the configured rate for each requested source. The final charge uses the rate saved at acceptance and counts supported answer records, including records that answer only some requested facts. Sources without supported answers are omitted and incur no record charge. Call duration and call status do not determine record price.
+
+Cancellation or expiry preserves charges for eligible answers finalized before the cutoff and releases unused reservations after final processing. Historical searches retain their accepted rates and billing policies. `billed_minor` reports saved incurred cost, including usage awaiting reconciliation; it is not an invoice payment status.
+
+## Queued searches
+
+Each search accepts `results` from 1–10. Search-start allowances apply to the first start of discovery in a rolling 60-second window, shared across keys and environments in a workspace.
+
+| Plan | Default search starts per minute |
+| --- | --- |
+| Free | 5 |
+| Pay as you go | 30 |
+
+The workspace's configured plan determines its actual allowance. Pay as you go requires an eligible saved card; otherwise the Free allowance applies. These allowances do not guarantee call throughput.
+
+Accepted requests return `202`. Work waiting for a start allowance or shared call capacity remains `running`; waiting alone does not return `429`. Queue time counts toward the search deadline.
+
+Default backlog bounds are 1,000 unfinished searches or 10,000 requested sources per workspace, and 10,000 searches or 100,000 sources across the service. These operational bounds can be adjusted. Reaching one returns `429 rate_limited`, `Retry-After: 60`, and `X-Thred-Overload-Reason: search_backlog_limit` without accepting the search or reserving credit.
+
+## Two-hour work deadline
+
+New searches have two hours from acceptance for discovery, queue waiting, calls, and answer collection. Starting work does not reset the deadline.
+
+At the cutoff, new work stops and active calls receive cancellation. Eligible answers finalized before the cutoff are retained. After final processing, a search with records is `completed` without a top-level `error`; an empty timeout is `failed` with `deadline_exceeded`. Bounded final processing and [webhook delivery retries](/guides/webhooks) can continue after the deadline.

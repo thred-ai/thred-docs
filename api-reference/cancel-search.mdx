@@ -6,6 +6,13 @@ openapi: "api-reference/openapi.json POST /search/{id}/cancel"
 "twitter:image:alt": "Thred documentation: Cancel a search"
 ---
 
-Stop remaining work for a search. No request body is required, and published results remain available.
+Stop remaining work for a search. No request body is required. Finalized answers remain available.
 
-The API returns HTTP `202`. Poll the search until `terminal` is true. Repeating cancellation is safe.
+The API returns HTTP `202` with the final snapshot:
+
+- `completed` with no error when at least one supported record remains.
+- `failed` when no records remain, with a specific error or `no_results`.
+
+No more answers are added after cancellation. Call cleanup and timing updates may finish later; you can stop polling for answers.
+
+Repeating cancellation is safe. Canceling an already settled search returns its existing outcome. Request failures use the [request error contract](/guides/errors#request-errors).

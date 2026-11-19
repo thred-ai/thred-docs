@@ -65,7 +65,7 @@
     },
     "/v1/auth/me": {
       "get": {
-        "operationId": "getIdentity",
+        "operationId": "getApiKeyIdentity",
         "tags": [
           "Authentication"
         ],
@@ -77,7 +77,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Identity"
+                  "$ref": "#/components/schemas/ApiKeyIdentity"
                 },
                 "example": {
                   "workspace_id": "p17n2d6c9f4g7h0j3k5m8q1s6v9w2x4z",
@@ -115,7 +115,7 @@
           "Usage"
         ],
         "summary": "Get daily usage",
-        "description": "Read operational usage for 1\u201331 inclusive UTC days. Both dates default to today. searches, attempted_calls, and answered_calls use the search creation date. requested, completed, incomplete, failed, canceled, and elapsed_job_seconds use each call creation date. These counters are not a billing statement.",
+        "description": "Read daily search activity and incurred record cost for your workspace.",
         "parameters": [
           {
             "name": "from",
@@ -155,7 +155,7 @@
                   "timezone": "UTC",
                   "attribution": "search_created_date_for_search_metrics_call_created_date_for_call_metrics",
                   "billing_status": "unreconciled",
-                  "billed_seconds": null,
+                  "billed_ms": null,
                   "data": [
                     {
                       "day": "2026-11-12",
@@ -164,12 +164,38 @@
                       "answered_calls": 2,
                       "requested": 2,
                       "completed": 2,
-                      "incomplete": 0,
                       "failed": 0,
-                      "canceled": 0,
-                      "elapsed_job_seconds": 240
+                      "elapsed_job_ms": 240000,
+                      "billable_records": 2,
+                      "billed_minor": 30,
+                      "completed_records": 0,
+                      "partial_records": 0,
+                      "legacy_records": 0,
+                      "returned_records": 2,
+                      "call_outcomes_status": "ready"
                     }
-                  ]
+                  ],
+                  "record_billing": {
+                    "enabled": true,
+                    "currency": "USD",
+                    "unit": "returned_record",
+                    "billable_records": 2,
+                    "billed_minor": 30,
+                    "completed_records": 0,
+                    "partial_records": 0,
+                    "legacy_records": 0,
+                    "attribution": "search_created_date",
+                    "cost_status": "incurred_usage_not_invoice_payment",
+                    "returned_records": 2,
+                    "current_price_minor": 15,
+                    "plan_catalog_version": "billing-plans-v2",
+                    "plan_catalog_ready": true,
+                    "effective_plan_id": "free",
+                    "plan_revision": 1,
+                    "rate_binding_ready": true
+                  },
+                  "call_outcome_policy": "call-outcome-v1",
+                  "call_outcomes_status": "ready"
                 }
               }
             },
@@ -205,7 +231,7 @@
         ],
         "operationId": "createSearch",
         "summary": "Create a search",
-        "description": "Start a search for answers to a query. Returns HTTP 202 with a search ID; use it to retrieve status and results.",
+        "description": "Retrieve information over the phone with a natural-language query.",
         "requestBody": {
           "required": true,
           "content": {
@@ -233,9 +259,32 @@
                       },
                       "pickup_details": {
                         "type": "string",
-                        "description": "Same-day pickup availability and the latest local pickup time."
+                        "description": "If in stock, same-day pickup availability and the latest local pickup time."
                       }
                     }
+                  }
+                },
+                "Temporary identity": {
+                  "summary": "Use an inline identity",
+                  "value": {
+                    "query": "Which stores in Austin can reserve a Nintendo Switch 2 for pickup today?",
+                    "results": 2,
+                    "identity": {
+                      "name": "Alex",
+                      "behalfOf": {
+                        "name": "Jordan",
+                        "relationship": "my colleague"
+                      }
+                    }
+                  }
+                },
+                "Saved identity": {
+                  "summary": "Use a saved identity",
+                  "description": "Replace YOUR_IDENTITY_ID with the ID copied from Settings → Identities in the matching environment.",
+                  "value": {
+                    "query": "Which stores in Austin can reserve a Nintendo Switch 2 for pickup today?",
+                    "results": 2,
+                    "identityId": "YOUR_IDENTITY_ID"
                   }
                 }
               }
@@ -251,27 +300,11 @@
                   "$ref": "#/components/schemas/Search"
                 },
                 "example": {
-                  "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                  "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
-                  "status": "discovering",
-                  "environment": "development",
-                  "identity": {
-                    "name": "AI assistant"
-                  },
-                  "call_reason": "public",
-                  "requested_calls": 2,
-                  "selected_businesses": 0,
-                  "attempted_calls": 0,
-                  "answered_calls": 0,
-                  "published_results": 0,
-                  "discovery_shortfall": null,
-                  "created_at": "2026-11-12T15:00:00Z",
-                  "deadline_at": "2026-11-12T15:30:00Z",
-                  "finished_at": null,
-                  "terminal": false,
-                  "cancellation_requested": false,
-                  "stop_reason": null,
-                  "error": null
+                  "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                  "status": "running",
+                  "timestamp": "2026-11-12T15:00:00.000Z",
+                  "duration": 100,
+                  "records": []
                 }
               }
             },
@@ -286,22 +319,34 @@
             }
           },
           "400": {
-            "$ref": "#/components/responses/BadRequest"
+            "$ref": "#/components/responses/SearchHttp400"
           },
           "401": {
-            "$ref": "#/components/responses/Unauthorized"
+            "$ref": "#/components/responses/SearchHttp401"
           },
           "429": {
-            "$ref": "#/components/responses/RateLimited"
+            "$ref": "#/components/responses/SearchHttp429"
           },
           "503": {
-            "$ref": "#/components/responses/Unavailable"
+            "$ref": "#/components/responses/SearchHttp503"
           },
           "500": {
-            "$ref": "#/components/responses/InternalError"
+            "$ref": "#/components/responses/SearchHttp500"
           },
           "413": {
-            "$ref": "#/components/responses/TooLarge"
+            "$ref": "#/components/responses/SearchHttp413"
+          },
+          "402": {
+            "$ref": "#/components/responses/SearchHttp402"
+          },
+          "403": {
+            "$ref": "#/components/responses/SearchHttp403"
+          },
+          "404": {
+            "$ref": "#/components/responses/SearchHttp404"
+          },
+          "409": {
+            "$ref": "#/components/responses/SearchHttp409"
           }
         }
       }
@@ -320,42 +365,351 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^search_[a-z0-9-]+$"
+              "pattern": "^(sch_|search_)[a-z0-9-]+$"
             },
-            "description": "Search ID returned by POST /search.",
-            "example": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
+            "description": "Search identifier returned by POST /search, canonically prefixed sch_. Earlier search_ identifiers remain valid lookup aliases; returned IDs use sch_.",
+            "example": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
           }
         ],
         "responses": {
           "200": {
-            "description": "Current search status and progress counters.",
+            "description": "Current search snapshot with all published supported answer records.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Search"
                 },
-                "example": {
-                  "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-                  "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
-                  "status": "completed",
-                  "environment": "development",
-                  "identity": {
-                    "name": "AI assistant"
+                "examples": {
+                  "Completed search": {
+                    "summary": "Completed search",
+                    "description": "Two complete answers from fictional sources. No custom output was requested.",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "completed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 185000,
+                      "records": [
+                        {
+                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+                          "source": {
+                            "details": {
+                              "name": "Example Electronics",
+                              "url": "https://example.com/electronics",
+                              "phone": "+15125550123",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:01:25.000Z",
+                              "picked_up_at": "2026-11-12T15:01:35.000Z"
+                            }
+                          },
+                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time."
+                        },
+                        {
+                          "id": "rcd_k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
+                          "source": {
+                            "details": {
+                              "name": "Example Games",
+                              "url": "https://example.com/games",
+                              "phone": "+15125550124",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:02:20.000Z",
+                              "picked_up_at": "2026-11-12T15:02:30.000Z"
+                            }
+                          },
+                          "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time."
+                        }
+                      ]
+                    }
                   },
-                  "call_reason": "public",
-                  "requested_calls": 2,
-                  "selected_businesses": 2,
-                  "attempted_calls": 2,
-                  "answered_calls": 2,
-                  "published_results": 2,
-                  "discovery_shortfall": 0,
-                  "created_at": "2026-11-12T15:00:00Z",
-                  "deadline_at": "2026-11-12T15:30:00Z",
-                  "finished_at": "2026-11-12T15:03:10Z",
-                  "terminal": true,
-                  "cancellation_requested": false,
-                  "stop_reason": null,
-                  "error": null
+                  "Structured answers": {
+                    "summary": "Completed search with structured fields",
+                    "description": "The same completed search with the in_stock and pickup_details fields requested in output.",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "completed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 185000,
+                      "records": [
+                        {
+                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+                          "source": {
+                            "details": {
+                              "name": "Example Electronics",
+                              "url": "https://example.com/electronics",
+                              "phone": "+15125550123",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:01:25.000Z",
+                              "picked_up_at": "2026-11-12T15:01:35.000Z"
+                            }
+                          },
+                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
+                          "output": {
+                            "in_stock": true,
+                            "pickup_details": "Pickup today until 6 p.m. Central Time."
+                          }
+                        },
+                        {
+                          "id": "rcd_k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
+                          "source": {
+                            "details": {
+                              "name": "Example Games",
+                              "url": "https://example.com/games",
+                              "phone": "+15125550124",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:02:20.000Z",
+                              "picked_up_at": "2026-11-12T15:02:30.000Z"
+                            }
+                          },
+                          "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time.",
+                          "output": {
+                            "in_stock": true,
+                            "pickup_details": "Pickup today until 8 p.m. Central Time."
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "Negative answer": {
+                    "summary": "A supported negative answer is complete",
+                    "description": "Pickup details apply only if stock is available. The inapplicable field is omitted.",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "completed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 130000,
+                      "records": [
+                        {
+                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+                          "source": {
+                            "details": {
+                              "name": "Example Electronics",
+                              "url": "https://example.com/electronics",
+                              "phone": "+15125550123",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We do not have the Nintendo Switch 2 in stock.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:01:25.000Z",
+                              "picked_up_at": "2026-11-12T15:01:35.000Z"
+                            }
+                          },
+                          "content": "Example Electronics does not have the Nintendo Switch 2 in stock.",
+                          "output": {
+                            "in_stock": false
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "No eligible sources": {
+                    "summary": "Discovery succeeded with no eligible sources",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "failed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 4200,
+                      "records": [],
+                      "error": {
+                        "code": "no_results",
+                        "message": "No sources provided a supported answer."
+                      }
+                    }
+                  },
+                  "Historical timing unavailable": {
+                    "summary": "Saved answer with unknown business timing",
+                    "description": "Fictional older record: do not infer placement, pickup, connected duration or terminal search duration from generic lifecycle timestamps. Existing evidence offsets retain their own clock.",
+                    "value": {
+                      "id": "sch_legacy-saved",
+                      "status": "completed",
+                      "timestamp": "2026-10-20T15:00:00.000Z",
+                      "duration": null,
+                      "records": [
+                        {
+                          "id": "rcd_legacy_source",
+                          "source": {
+                            "details": {
+                              "name": "Example Historic Shop",
+                              "phone": "+15125550125"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We close at six.",
+                                "start": 21750,
+                                "end": null
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": null,
+                              "placed_at": null
+                            }
+                          },
+                          "content": "The shop closes at 6 p.m.; parking availability was not confirmed."
+                        }
+                      ]
+                    }
+                  },
+                  "Supported answers": {
+                    "summary": "Supported answers with unresolved facts",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "completed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 130000,
+                      "records": [
+                        {
+                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+                          "source": {
+                            "details": {
+                              "name": "Example Electronics",
+                              "url": "https://example.com/electronics",
+                              "phone": "+15125550123",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We have Nintendo Switch 2 consoles in stock.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:01:25.000Z",
+                              "picked_up_at": "2026-11-12T15:01:35.000Z"
+                            }
+                          },
+                          "content": "Example Electronics has the Nintendo Switch 2 in stock. Same-day pickup was not confirmed."
+                        }
+                      ]
+                    },
+                    "description": "Some requested information remains unknown. Processing completed successfully, so answer coverage does not downgrade the search status."
+                  },
+                  "No usable answers": {
+                    "summary": "Search failed with no supported answers",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "failed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 130000,
+                      "records": [],
+                      "error": {
+                        "code": "no_results",
+                        "message": "No sources provided a supported answer."
+                      }
+                    },
+                    "description": "Every source was processed but none supplied a supported answer. The search failed with no_results and an empty records array."
+                  },
+                  "Search deadline": {
+                    "summary": "Search completed with an answer retained at its deadline",
+                    "description": "The search reached its deadline but retained a supported record, so it is completed without a top-level error.",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "completed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 7200000,
+                      "records": [
+                        {
+                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+                          "source": {
+                            "details": {
+                              "name": "Example Electronics",
+                              "url": "https://example.com/electronics",
+                              "phone": "+15125550123",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:01:25.000Z",
+                              "picked_up_at": "2026-11-12T15:01:35.000Z"
+                            }
+                          },
+                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time."
+                        }
+                      ]
+                    }
+                  },
+                  "Discovery failed": {
+                    "summary": "Search-wide discovery failure",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "failed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 4200,
+                      "records": [],
+                      "error": {
+                        "code": "discovery_failed",
+                        "message": "Source discovery could not finish."
+                      }
+                    }
+                  },
+                  "Empty search deadline": {
+                    "summary": "Search reached its deadline without an answer",
+                    "description": "A settled search with no returned records fails; its specific deadline error is retained instead of no_results.",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "failed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 7200000,
+                      "records": [],
+                      "error": {
+                        "code": "deadline_exceeded",
+                        "message": "The search reached its deadline."
+                      }
+                    }
+                  }
                 }
               }
             },
@@ -370,19 +724,25 @@
             }
           },
           "401": {
-            "$ref": "#/components/responses/Unauthorized"
+            "$ref": "#/components/responses/SearchHttp401"
           },
           "404": {
-            "$ref": "#/components/responses/NotFound"
+            "$ref": "#/components/responses/SearchHttp404"
           },
           "500": {
-            "$ref": "#/components/responses/InternalError"
+            "$ref": "#/components/responses/SearchHttp500"
           },
           "503": {
-            "$ref": "#/components/responses/Unavailable"
+            "$ref": "#/components/responses/SearchHttp503"
+          },
+          "400": {
+            "$ref": "#/components/responses/SearchHttp400"
+          },
+          "403": {
+            "$ref": "#/components/responses/SearchHttp403"
           }
         },
-        "description": "Read the current status and progress counters for a search. The example shows a completed search. While terminal is false, continue polling. Retrieve the answers from `GET /search/{id}/results`."
+        "description": "Read the latest status and answers for a search."
       }
     },
     "/search/{id}/results": {
@@ -391,8 +751,8 @@
           "Search"
         ],
         "operationId": "getSearchResults",
-        "summary": "Get search results",
-        "description": "Read saved search results in the order they become available. Each result contains an answer, source details, and supporting evidence. Read the next page using next_cursor; continue polling while terminal is false. Reading results does not start more calls. rank preserves each source's relevance rank.",
+        "summary": "Get search records",
+        "description": "Retrieve the full set of supported answers and their sources.",
         "parameters": [
           {
             "name": "id",
@@ -400,201 +760,349 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^search_[a-z0-9-]+$"
+              "pattern": "^(sch_|search_)[a-z0-9-]+$"
             },
-            "description": "Search ID returned by POST /search.",
-            "example": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100,
-              "default": 10
-            },
-            "description": "Maximum number of published results to return on this page.",
-            "example": 2
-          },
-          {
-            "name": "cursor",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "description": "Opaque next_cursor from a previous page of this search. Omit it to start at the first published outcome."
+            "description": "Search identifier returned by POST /search, canonically prefixed sch_. Earlier search_ identifiers remain valid lookup aliases; returned IDs use sch_.",
+            "example": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
           }
         ],
         "responses": {
           "200": {
-            "description": "Saved search results.",
+            "description": "Current search snapshot with all published supported answer records.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SearchResultsPage"
+                  "$ref": "#/components/schemas/Search"
                 },
                 "examples": {
                   "Completed search": {
                     "summary": "Completed search",
                     "description": "Two complete answers from fictional sources. No custom output was requested.",
                     "value": {
-                      "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
                       "status": "completed",
-                      "results": [
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 185000,
+                      "records": [
                         {
-                          "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
-                          "rank": 1,
-                          "business": {
-                            "name": "Example Electronics",
-                            "url": "https://example.com/electronics",
-                            "phone": "+15125550123",
-                            "address": "Austin, TX"
-                          },
-                          "status": "completed",
-                          "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-                          "outcome": null,
-                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
-                          "evidence": [
-                            {
-                              "type": "call",
-                              "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-                              "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
-                              "at_seconds": 18.2
-                            }
-                          ],
-                          "sources": [
-                            {
+                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+                          "source": {
+                            "details": {
+                              "name": "Example Electronics",
                               "url": "https://example.com/electronics",
-                              "title": "Example Electronics contact details",
-                              "phoneExcerpt": "Call +1 512-555-0123"
+                              "phone": "+15125550123",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:01:25.000Z",
+                              "picked_up_at": "2026-11-12T15:01:35.000Z"
                             }
-                          ],
-                          "verified_at": "2026-11-12T15:00:12Z",
-                          "completed_at": "2026-11-12T15:02:10Z",
-                          "error": null
+                          },
+                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time."
                         },
                         {
-                          "id": "k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
-                          "rank": 2,
-                          "business": {
-                            "name": "Example Games",
-                            "url": "https://example.com/games",
-                            "phone": "+15125550124",
-                            "address": "Austin, TX"
-                          },
-                          "status": "completed",
-                          "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
-                          "outcome": null,
-                          "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time.",
-                          "evidence": [
-                            {
-                              "type": "call",
-                              "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
-                              "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
-                              "at_seconds": 24.5
-                            }
-                          ],
-                          "sources": [
-                            {
+                          "id": "rcd_k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
+                          "source": {
+                            "details": {
+                              "name": "Example Games",
                               "url": "https://example.com/games",
-                              "title": "Example Games contact details",
-                              "phoneExcerpt": "Call +1 512-555-0124"
+                              "phone": "+15125550124",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:02:20.000Z",
+                              "picked_up_at": "2026-11-12T15:02:30.000Z"
                             }
-                          ],
-                          "verified_at": "2026-11-12T15:00:15Z",
-                          "completed_at": "2026-11-12T15:03:05Z",
-                          "error": null
+                          },
+                          "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time."
                         }
-                      ],
-                      "next_cursor": "WyJzZWFyY2hfNmM0NzlhMzAtY2YwNi00ZGJhLThkYzktMmQyODkzYmJjNjRmIiwyXQ==",
-                      "has_more": false,
-                      "terminal": true
+                      ]
                     }
                   },
                   "Structured answers": {
                     "summary": "Completed search with structured fields",
                     "description": "The same completed search with the in_stock and pickup_details fields requested in output.",
                     "value": {
-                      "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
                       "status": "completed",
-                      "results": [
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 185000,
+                      "records": [
                         {
-                          "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
-                          "rank": 1,
-                          "business": {
-                            "name": "Example Electronics",
-                            "url": "https://example.com/electronics",
-                            "phone": "+15125550123",
-                            "address": "Austin, TX"
-                          },
-                          "status": "completed",
-                          "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-                          "outcome": null,
-                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
-                          "evidence": [
-                            {
-                              "type": "call",
-                              "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-                              "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
-                              "at_seconds": 18.2
-                            }
-                          ],
-                          "sources": [
-                            {
+                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+                          "source": {
+                            "details": {
+                              "name": "Example Electronics",
                               "url": "https://example.com/electronics",
-                              "title": "Example Electronics contact details",
-                              "phoneExcerpt": "Call +1 512-555-0123"
+                              "phone": "+15125550123",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:01:25.000Z",
+                              "picked_up_at": "2026-11-12T15:01:35.000Z"
                             }
-                          ],
-                          "verified_at": "2026-11-12T15:00:12Z",
-                          "completed_at": "2026-11-12T15:02:10Z",
-                          "error": null,
+                          },
+                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
                           "output": {
                             "in_stock": true,
                             "pickup_details": "Pickup today until 6 p.m. Central Time."
                           }
                         },
                         {
-                          "id": "k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
-                          "rank": 2,
-                          "business": {
-                            "name": "Example Games",
-                            "url": "https://example.com/games",
-                            "phone": "+15125550124",
-                            "address": "Austin, TX"
-                          },
-                          "status": "completed",
-                          "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
-                          "outcome": null,
-                          "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time.",
-                          "evidence": [
-                            {
-                              "type": "call",
-                              "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
-                              "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
-                              "at_seconds": 24.5
-                            }
-                          ],
-                          "sources": [
-                            {
+                          "id": "rcd_k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
+                          "source": {
+                            "details": {
+                              "name": "Example Games",
                               "url": "https://example.com/games",
-                              "title": "Example Games contact details",
-                              "phoneExcerpt": "Call +1 512-555-0124"
+                              "phone": "+15125550124",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:02:20.000Z",
+                              "picked_up_at": "2026-11-12T15:02:30.000Z"
                             }
-                          ],
-                          "verified_at": "2026-11-12T15:00:15Z",
-                          "completed_at": "2026-11-12T15:03:05Z",
-                          "error": null,
+                          },
+                          "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time.",
                           "output": {
                             "in_stock": true,
                             "pickup_details": "Pickup today until 8 p.m. Central Time."
                           }
                         }
-                      ],
-                      "next_cursor": "WyJzZWFyY2hfNmM0NzlhMzAtY2YwNi00ZGJhLThkYzktMmQyODkzYmJjNjRmIiwyXQ==",
-                      "has_more": false,
-                      "terminal": true
+                      ]
+                    }
+                  },
+                  "Negative answer": {
+                    "summary": "A supported negative answer is complete",
+                    "description": "Pickup details apply only if stock is available. The inapplicable field is omitted.",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "completed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 130000,
+                      "records": [
+                        {
+                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+                          "source": {
+                            "details": {
+                              "name": "Example Electronics",
+                              "url": "https://example.com/electronics",
+                              "phone": "+15125550123",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We do not have the Nintendo Switch 2 in stock.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:01:25.000Z",
+                              "picked_up_at": "2026-11-12T15:01:35.000Z"
+                            }
+                          },
+                          "content": "Example Electronics does not have the Nintendo Switch 2 in stock.",
+                          "output": {
+                            "in_stock": false
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "No eligible sources": {
+                    "summary": "Discovery succeeded with no eligible sources",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "failed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 4200,
+                      "records": [],
+                      "error": {
+                        "code": "no_results",
+                        "message": "No sources provided a supported answer."
+                      }
+                    }
+                  },
+                  "Historical timing unavailable": {
+                    "summary": "Saved answer with unknown business timing",
+                    "description": "Fictional older record: do not infer placement, pickup, connected duration or terminal search duration from generic lifecycle timestamps. Existing evidence offsets retain their own clock.",
+                    "value": {
+                      "id": "sch_legacy-saved",
+                      "status": "completed",
+                      "timestamp": "2026-10-20T15:00:00.000Z",
+                      "duration": null,
+                      "records": [
+                        {
+                          "id": "rcd_legacy_source",
+                          "source": {
+                            "details": {
+                              "name": "Example Historic Shop",
+                              "phone": "+15125550125"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We close at six.",
+                                "start": 21750,
+                                "end": null
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": null,
+                              "placed_at": null
+                            }
+                          },
+                          "content": "The shop closes at 6 p.m.; parking availability was not confirmed."
+                        }
+                      ]
+                    }
+                  },
+                  "Supported answers": {
+                    "summary": "Supported answers with unresolved facts",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "completed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 130000,
+                      "records": [
+                        {
+                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+                          "source": {
+                            "details": {
+                              "name": "Example Electronics",
+                              "url": "https://example.com/electronics",
+                              "phone": "+15125550123",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We have Nintendo Switch 2 consoles in stock.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:01:25.000Z",
+                              "picked_up_at": "2026-11-12T15:01:35.000Z"
+                            }
+                          },
+                          "content": "Example Electronics has the Nintendo Switch 2 in stock. Same-day pickup was not confirmed."
+                        }
+                      ]
+                    },
+                    "description": "Some requested information remains unknown. Processing completed successfully, so answer coverage does not downgrade the search status."
+                  },
+                  "No usable answers": {
+                    "summary": "Search failed with no supported answers",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "failed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 130000,
+                      "records": [],
+                      "error": {
+                        "code": "no_results",
+                        "message": "No sources provided a supported answer."
+                      }
+                    },
+                    "description": "Every source was processed but none supplied a supported answer. The search failed with no_results and an empty records array."
+                  },
+                  "Search deadline": {
+                    "summary": "Search completed with an answer retained at its deadline",
+                    "description": "The search reached its deadline but retained a supported record, so it is completed without a top-level error.",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "completed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 7200000,
+                      "records": [
+                        {
+                          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+                          "source": {
+                            "details": {
+                              "name": "Example Electronics",
+                              "url": "https://example.com/electronics",
+                              "phone": "+15125550123",
+                              "address": "Austin, TX"
+                            },
+                            "evidence": [
+                              {
+                                "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
+                                "start": 18200,
+                                "end": 23600
+                              }
+                            ],
+                            "call_metadata": {
+                              "duration": 30000,
+                              "placed_at": "2026-11-12T15:01:25.000Z",
+                              "picked_up_at": "2026-11-12T15:01:35.000Z"
+                            }
+                          },
+                          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time."
+                        }
+                      ]
+                    }
+                  },
+                  "Discovery failed": {
+                    "summary": "Search-wide discovery failure",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "failed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 4200,
+                      "records": [],
+                      "error": {
+                        "code": "discovery_failed",
+                        "message": "Source discovery could not finish."
+                      }
+                    }
+                  },
+                  "Empty search deadline": {
+                    "summary": "Search reached its deadline without an answer",
+                    "description": "A settled search with no returned records fails; its specific deadline error is retained instead of no_results.",
+                    "value": {
+                      "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                      "status": "failed",
+                      "timestamp": "2026-11-12T15:00:00.000Z",
+                      "duration": 7200000,
+                      "records": [],
+                      "error": {
+                        "code": "deadline_exceeded",
+                        "message": "The search reached its deadline."
+                      }
                     }
                   }
                 }
@@ -611,19 +1119,22 @@
             }
           },
           "400": {
-            "$ref": "#/components/responses/BadRequest"
+            "$ref": "#/components/responses/SearchHttp400"
           },
           "401": {
-            "$ref": "#/components/responses/Unauthorized"
+            "$ref": "#/components/responses/SearchHttp401"
           },
           "404": {
-            "$ref": "#/components/responses/NotFound"
+            "$ref": "#/components/responses/SearchHttp404"
           },
           "500": {
-            "$ref": "#/components/responses/InternalError"
+            "$ref": "#/components/responses/SearchHttp500"
           },
           "503": {
-            "$ref": "#/components/responses/Unavailable"
+            "$ref": "#/components/responses/SearchHttp503"
+          },
+          "403": {
+            "$ref": "#/components/responses/SearchHttp403"
           }
         }
       }
@@ -635,7 +1146,7 @@
         ],
         "operationId": "cancelSearch",
         "summary": "Cancel a search",
-        "description": "Stop work that has not started and request cancellation of active calls. Published results remain available. Poll `GET /search/{id}` until terminal is true. Repeated cancellation requests are safe.",
+        "description": "Stop remaining work and keep the answers already collected.",
         "parameters": [
           {
             "name": "id",
@@ -643,42 +1154,30 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^search_[a-z0-9-]+$"
+              "pattern": "^(sch_|search_)[a-z0-9-]+$"
             },
-            "description": "Search ID returned by POST /search.",
-            "example": "search_15b2a4b8-fabc-41cc-8e38-2a4763db600e"
+            "description": "Search identifier returned by POST /search, canonically prefixed sch_. Earlier search_ identifiers remain valid lookup aliases; returned IDs use sch_.",
+            "example": "sch_15b2a4b8-fabc-41cc-8e38-2a4763db600e"
           }
         ],
         "responses": {
           "202": {
-            "description": "Cancellation requested or terminal search returned.",
+            "description": "Terminal snapshot after the requested stop, or the existing snapshot for an already settled search.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Search"
                 },
                 "example": {
-                  "id": "search_15b2a4b8-fabc-41cc-8e38-2a4763db600e",
-                  "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
-                  "status": "canceling",
-                  "environment": "development",
-                  "identity": {
-                    "name": "AI assistant"
-                  },
-                  "call_reason": "public",
-                  "requested_calls": 2,
-                  "selected_businesses": 2,
-                  "attempted_calls": 1,
-                  "answered_calls": 0,
-                  "published_results": 0,
-                  "discovery_shortfall": 0,
-                  "created_at": "2026-11-12T15:00:00Z",
-                  "deadline_at": "2026-11-12T15:30:00Z",
-                  "finished_at": null,
-                  "terminal": false,
-                  "cancellation_requested": true,
-                  "stop_reason": "canceled",
-                  "error": null
+                  "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+                  "status": "failed",
+                  "timestamp": "2026-11-12T15:00:00.000Z",
+                  "duration": 130000,
+                  "records": [],
+                  "error": {
+                    "code": "no_results",
+                    "message": "No sources provided a supported answer."
+                  }
                 }
               }
             },
@@ -693,16 +1192,25 @@
             }
           },
           "401": {
-            "$ref": "#/components/responses/Unauthorized"
+            "$ref": "#/components/responses/SearchHttp401"
           },
           "404": {
-            "$ref": "#/components/responses/NotFound"
+            "$ref": "#/components/responses/SearchHttp404"
           },
           "500": {
-            "$ref": "#/components/responses/InternalError"
+            "$ref": "#/components/responses/SearchHttp500"
           },
           "503": {
-            "$ref": "#/components/responses/Unavailable"
+            "$ref": "#/components/responses/SearchHttp503"
+          },
+          "403": {
+            "$ref": "#/components/responses/SearchHttp403"
+          },
+          "400": {
+            "$ref": "#/components/responses/SearchHttp400"
+          },
+          "413": {
+            "$ref": "#/components/responses/SearchHttp413"
           }
         }
       }
@@ -753,7 +1261,7 @@
           "environment"
         ]
       },
-      "Identity": {
+      "ApiKeyIdentity": {
         "type": "object",
         "properties": {
           "workspace_id": {
@@ -789,27 +1297,19 @@
           "completed": {
             "type": "integer",
             "minimum": 0,
-            "description": "Calls finalized as completed, attributed to each call creation date."
-          },
-          "incomplete": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Calls finalized as incomplete, attributed to each call creation date."
+            "description": "Calls with destination pickup and a final transcript verifying that a live human at the business spoke, attributed to each call creation date. Null when this day’s call outcomes are unavailable.",
+            "nullable": true
           },
           "failed": {
             "type": "integer",
             "minimum": 0,
-            "description": "Calls finalized as failed, attributed to each call creation date."
+            "description": "Settled calls without pickup, a usable final transcript, or verified live-human speech. IVR-only, voicemail-only, recorded announcements and agent-only speech fail. Null when this day’s call outcomes are unavailable.",
+            "nullable": true
           },
-          "canceled": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Calls finalized as canceled, attributed to each call creation date."
-          },
-          "elapsed_job_seconds": {
+          "elapsed_job_ms": {
             "type": "number",
             "minimum": 0,
-            "description": "Elapsed time recorded when calls close, counted on each call creation date."
+            "description": "Elapsed milliseconds (ms) recorded when calls close, counted on each call creation date."
           },
           "searches": {
             "type": "integer",
@@ -825,19 +1325,62 @@
             "type": "integer",
             "minimum": 0,
             "description": "Calls answered by the destination, including automated answering systems; attributed to the parent search creation date."
+          },
+          "billable_records": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "All charged records, including legacy and versioned outcomes, attributed to search acceptance date."
+          },
+          "billed_minor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Incurred cost in USD cents at the saved prices; includes pending Stripe reconciliation and is not invoice payment status."
+          },
+          "completed_records": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Billable complete records under outcome-record-v2; no inferred historical classification."
+          },
+          "partial_records": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Billable partial records under outcome-record-v2; no inferred historical classification."
+          },
+          "legacy_records": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Records charged under the earlier flat-rate policy, retaining saved amounts."
+          },
+          "returned_records": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Charged returned records under returned-record-v3, including supported answers with unresolved requested facts. Historical policies retain their own counters."
+          },
+          "call_outcomes_status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "unavailable"
+            ],
+            "description": "Whether completed and failed counts use the current call-outcome policy for every settled call on this day. Unavailable counts are null rather than legacy values or zero; active calls contribute to neither terminal count."
           }
         },
         "required": [
           "day",
           "requested",
           "completed",
-          "incomplete",
           "failed",
-          "canceled",
-          "elapsed_job_seconds",
+          "elapsed_job_ms",
           "searches",
           "attempted_calls",
-          "answered_calls"
+          "answered_calls",
+          "call_outcomes_status",
+          "billable_records",
+          "billed_minor",
+          "completed_records",
+          "partial_records",
+          "legacy_records",
+          "returned_records"
         ]
       },
       "Usage": {
@@ -865,7 +1408,7 @@
             "enum": [
               "search_created_date_for_search_metrics_call_created_date_for_call_metrics"
             ],
-            "description": "searches, attempted_calls, and answered_calls use the search creation date. The other counters use the call creation date."
+            "description": "Search and record billing metrics use the search acceptance date; call outcome and elapsed-time metrics use the call creation date."
           },
           "billing_status": {
             "type": "string",
@@ -873,13 +1416,13 @@
               "unreconciled"
             ]
           },
-          "billed_seconds": {
+          "billed_ms": {
             "type": "number",
             "nullable": true,
             "enum": [
               null
             ],
-            "description": "Always null; these counters are not billing reconciliation."
+            "description": "Billed duration in milliseconds; always null because these counters are not billing reconciliation."
           },
           "data": {
             "type": "array",
@@ -888,6 +1431,134 @@
             "items": {
               "$ref": "#/components/schemas/DailyUsage"
             }
+          },
+          "record_billing": {
+            "type": "object",
+            "description": "Saved incurred record cost; financial reconciliation is separate from usage finalization. Historical prices are preserved.",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether usage billing is enabled at runtime. This flag alone does not establish workspace billing readiness or erase historical charges."
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "USD"
+                ]
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "returned_record"
+                ]
+              },
+              "billable_records": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "billed_minor": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "completed_records": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "partial_records": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "legacy_records": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "attribution": {
+                "type": "string",
+                "enum": [
+                  "search_created_date"
+                ]
+              },
+              "plan_catalog_version": {
+                "type": "string",
+                "enum": [
+                  "billing-plans-v2"
+                ]
+              },
+              "plan_catalog_ready": {
+                "type": "boolean"
+              },
+              "rate_binding_ready": {
+                "type": "boolean",
+                "description": "Whether configured rates match the workspace's verified Stripe binding; other billing admission checks still apply."
+              },
+              "plan_revision": {
+                "type": "integer",
+                "minimum": 1,
+                "nullable": true,
+                "description": "Current effective plan revision, not a revision used to recalculate historical usage."
+              },
+              "effective_plan_id": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "free",
+                  "pay_as_you_go",
+                  null
+                ],
+                "description": "The card-eligible plan used for current rates, or null while the catalog is unavailable."
+              },
+              "cost_status": {
+                "type": "string",
+                "enum": [
+                  "incurred_usage_not_invoice_payment"
+                ]
+              },
+              "current_price_minor": {
+                "type": "integer",
+                "nullable": true,
+                "minimum": 1,
+                "description": "Current effective plan record rate in USD cents, or null while the catalog is unavailable. Historical charges retain their accepted prices."
+              },
+              "returned_records": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Charged returned records under returned-record-v3, including supported answers with unresolved requested facts. Historical policies retain their own counters."
+              }
+            },
+            "required": [
+              "enabled",
+              "currency",
+              "unit",
+              "billable_records",
+              "billed_minor",
+              "attribution",
+              "completed_records",
+              "partial_records",
+              "legacy_records",
+              "plan_catalog_version",
+              "plan_catalog_ready",
+              "rate_binding_ready",
+              "plan_revision",
+              "effective_plan_id",
+              "cost_status",
+              "current_price_minor",
+              "returned_records"
+            ]
+          },
+          "call_outcome_policy": {
+            "type": "string",
+            "enum": [
+              "call-outcome-v1"
+            ],
+            "description": "Version of the human-connection call-outcome policy used by completed and failed counters. Call outcomes do not determine answer record eligibility or billing."
+          },
+          "call_outcomes_status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "unavailable"
+            ],
+            "description": "Ready only when all requested days have current call-outcome counters. Other usage and financial fields remain available independently."
           }
         },
         "required": [
@@ -897,8 +1568,11 @@
           "timezone",
           "attribution",
           "billing_status",
-          "billed_seconds",
-          "data"
+          "billed_ms",
+          "data",
+          "call_outcome_policy",
+          "call_outcomes_status",
+          "record_billing"
         ]
       },
       "SearchRequest": {
@@ -920,49 +1594,30 @@
           "results": {
             "type": "integer",
             "minimum": 1,
-            "maximum": 100,
-            "description": "Hard cap of call attempts to distinct sources. Unanswered calls and negative answers count; successful matches are not guaranteed.",
+            "maximum": 10,
+            "description": "Hard cap of call attempts to distinct sources, from 1 to 10. Unanswered calls and negative answers count; successful matches are not guaranteed.",
             "example": 2
           },
           "identity": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "name"
-            ],
-            "properties": {
-              "name": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 100,
-                "pattern": "\\S"
-              },
-              "url": {
-                "type": "string",
-                "format": "uri",
-                "description": "HTTPS website without embedded credentials, to share when relevant.",
-                "minLength": 1,
-                "maxLength": 2000
-              },
-              "description": {
-                "type": "string",
-                "maxLength": 1000,
-                "minLength": 1,
-                "pattern": "\\S"
-              }
-            },
-            "default": {
-              "name": "AI assistant"
-            }
+            "$ref": "#/components/schemas/Identity"
+          },
+          "identityId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "\\S",
+            "description": "Active saved identity ID in the same workspace and API environment. Copy it from Settings → Identities. Mutually exclusive with identity; invalid or archived IDs are rejected."
           },
           "call_reason": {
             "type": "string",
             "enum": [
               "public",
-              "customer"
+              "customer",
+              null
             ],
             "default": "public",
-            "description": "Purpose of the call. Public does not make results publicly accessible."
+            "description": "Purpose of the call. Omitted or null uses public; this does not make results publicly accessible.",
+            "nullable": true
           },
           "location": {
             "type": "string",
@@ -1007,7 +1662,7 @@
                 }
               }
             },
-            "description": "Optional custom fields to collect, at most 20 fields and 12,000 characters of JSON. If omitted, each result contains a concise natural-language answer in content and no output property; Thred does not generate custom fields. Field names must contain 1\u2013120 characters and cannot be `__proto__`, `prototype`, or `constructor`. Descriptions must contain non-whitespace text."
+            "description": "Optional custom fields: at most 20 fields and 12,000 characters of JSON. Omit for text answers without output. Field names must contain 1–120 characters and cannot be `__proto__`, `prototype`, or `constructor`. Descriptions must contain non-whitespace text."
           },
           "webhook_id": {
             "type": "string",
@@ -1019,512 +1674,185 @@
           "metadata": {
             "type": "object",
             "additionalProperties": true,
-            "description": "Custom metadata stored with the search, up to 4000 UTF-8 bytes of JSON. Defaults to an empty object. It is not echoed in status, results, or webhook payloads.",
-            "default": {}
+            "description": "Custom metadata stored with the search, up to 4000 UTF-8 bytes of JSON. Omitted or null uses an empty object. Not echoed in responses or webhooks.",
+            "default": {},
+            "nullable": true
           }
         },
         "example": {
           "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
           "results": 2
-        }
+        },
+        "not": {
+          "required": [
+            "identity",
+            "identityId"
+          ]
+        },
+        "description": "Supply identity or identityId, or omit both to use the environment default. The older callAgent and callAgentId fields are not accepted."
       },
       "Search": {
         "type": "object",
+        "additionalProperties": false,
         "required": [
           "id",
-          "query",
           "status",
-          "environment",
-          "identity",
-          "call_reason",
-          "requested_calls",
-          "selected_businesses",
-          "attempted_calls",
-          "answered_calls",
-          "published_results",
-          "discovery_shortfall",
-          "created_at",
-          "deadline_at",
-          "finished_at",
-          "terminal",
-          "cancellation_requested",
-          "stop_reason",
-          "error"
+          "timestamp",
+          "duration",
+          "records"
+        ],
+        "description": "Full snapshot of supported answer records in source relevance order. Sources without supported answers are omitted. The numeric results request field is not a response field.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^sch_[a-z0-9-]+$",
+            "description": "Canonical search identifier with the sch_ prefix. Older search_ identifiers remain accepted as lookup aliases; responses always return the canonical sch_ value.",
+            "example": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "running",
+              "completed",
+              "failed"
+            ],
+            "description": "Running while work remains. Once settled, completed means at least one record and no error; failed means no records and an applicable error. Deadlines and cancellation preserve retained answers."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the search request was accepted. Stable across later reads.",
+            "example": "2026-11-12T15:00:00.000Z"
+          },
+          "duration": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "Elapsed milliseconds from acceptance, including queue time. Increases while running and is fixed at settlement or cancellation. Null when historical finish timing is unavailable.",
+            "example": 185000
+          },
+          "records": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "$ref": "#/components/schemas/SearchRecord"
+            },
+            "description": "Supported answers in relevance order. New searches attempt at most 10 sources; historical searches can retain up to 100. Replace the previous snapshot or reconcile by stable record ID."
+          },
+          "error": {
+            "$ref": "#/components/schemas/SearchOutcomeError"
+          }
+        },
+        "example": {
+          "id": "sch_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
+          "status": "completed",
+          "timestamp": "2026-11-12T15:00:00.000Z",
+          "duration": 185000,
+          "records": [
+            {
+              "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+              "source": {
+                "details": {
+                  "name": "Example Electronics",
+                  "url": "https://example.com/electronics",
+                  "phone": "+15125550123",
+                  "address": "Austin, TX"
+                },
+                "evidence": [
+                  {
+                    "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
+                    "start": 18200,
+                    "end": 23600
+                  }
+                ],
+                "call_metadata": {
+                  "duration": 30000,
+                  "placed_at": "2026-11-12T15:01:25.000Z",
+                  "picked_up_at": "2026-11-12T15:01:35.000Z"
+                }
+              },
+              "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time."
+            },
+            {
+              "id": "rcd_k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
+              "source": {
+                "details": {
+                  "name": "Example Games",
+                  "url": "https://example.com/games",
+                  "phone": "+15125550124",
+                  "address": "Austin, TX"
+                },
+                "evidence": [
+                  {
+                    "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
+                    "start": 18200,
+                    "end": 23600
+                  }
+                ],
+                "call_metadata": {
+                  "duration": 30000,
+                  "placed_at": "2026-11-12T15:02:20.000Z",
+                  "picked_up_at": "2026-11-12T15:02:30.000Z"
+                }
+              },
+              "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time."
+            }
+          ]
+        }
+      },
+      "SearchRecord": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "An evidence-backed answer to one or more requested facts. No per-record status, error or completion timestamp is exposed.",
+        "required": [
+          "id",
+          "source",
+          "content"
         ],
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^search_[a-z0-9-]+$",
-            "description": "Search ID returned when the request was accepted.",
-            "example": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
+            "description": "Stable opaque record identifier with the rcd_ prefix. Use this canonical ID to reconcile records across full snapshots.",
+            "pattern": "^rcd_[a-z0-9_-]+$",
+            "example": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q"
           },
-          "query": {
-            "type": "string",
-            "example": "Where can I buy a Nintendo Switch 2 in Austin today?"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "discovering",
-              "running",
-              "canceling",
-              "completed",
-              "failed",
-              "canceled",
-              "expired"
-            ],
-            "description": "Current search state. completed, failed, canceled, and expired are terminal."
-          },
-          "environment": {
-            "type": "string",
-            "enum": [
-              "development",
-              "production"
-            ]
-          },
-          "identity": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "name"
-            ],
-            "properties": {
-              "name": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 100
-              },
-              "url": {
-                "type": "string",
-                "format": "uri",
-                "description": "HTTPS website without embedded credentials, to share when relevant.",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "maxLength": 1000,
-                "minLength": 1
-              }
-            }
-          },
-          "call_reason": {
-            "type": "string",
-            "enum": [
-              "public",
-              "customer"
-            ]
-          },
-          "requested_calls": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 100,
-            "description": "The call-attempt limit supplied in the request results field."
-          },
-          "selected_businesses": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Number of selected sources."
-          },
-          "attempted_calls": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Number of sources where starting a call was attempted."
-          },
-          "answered_calls": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Calls answered by the destination, including automated answering systems."
-          },
-          "published_results": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Number of published result entries available from the results endpoint."
-          },
-          "discovery_shortfall": {
-            "type": "integer",
-            "nullable": true,
-            "minimum": 0,
-            "description": "Requested calls minus selected sources, bounded at zero. Null until source selection has finished."
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "deadline_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "New dialing stops after 30 minutes. Active calls are canceled; post-call processing may finish later."
-          },
-          "finished_at": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true,
-            "description": "When the search reached a terminal state; null while work is in progress."
-          },
-          "terminal": {
-            "type": "boolean",
-            "description": "Whether all work has settled and no more results will be published."
-          },
-          "cancellation_requested": {
-            "type": "boolean",
-            "description": "Whether cancellation was requested for this search."
-          },
-          "stop_reason": {
-            "type": "string",
-            "nullable": true,
-            "description": "Reason work was stopped early, when present; null for normal completion."
-          },
-          "error": {
-            "type": "object",
-            "nullable": true,
-            "properties": {
-              "code": {
-                "type": "string"
-              },
-              "message": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "code",
-              "message"
-            ],
-            "description": "Search-level failure details, or null when no search-level error was recorded."
-          }
-        },
-        "example": {
-          "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-          "query": "Where can I buy a Nintendo Switch 2 in Austin today?",
-          "status": "completed",
-          "environment": "development",
-          "identity": {
-            "name": "AI assistant"
-          },
-          "call_reason": "public",
-          "requested_calls": 2,
-          "selected_businesses": 2,
-          "attempted_calls": 2,
-          "answered_calls": 2,
-          "published_results": 2,
-          "discovery_shortfall": 0,
-          "created_at": "2026-11-12T15:00:00Z",
-          "deadline_at": "2026-11-12T15:30:00Z",
-          "finished_at": "2026-11-12T15:03:10Z",
-          "terminal": true,
-          "cancellation_requested": false,
-          "stop_reason": null,
-          "error": null
-        }
-      },
-      "SearchResult": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Opaque identifier for this result."
-          },
-          "rank": {
-            "type": "integer",
-            "minimum": 1,
-            "description": "Relevance rank assigned when the source was selected. Results are returned in the order they become available.",
-            "maximum": 100
-          },
-          "business": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "url": {
-                "type": "string"
-              },
-              "phone": {
-                "type": "string"
-              },
-              "address": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "name",
-              "url",
-              "phone",
-              "address"
-            ],
-            "description": "Source metadata: name, URL, phone number, and address."
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "completed",
-              "incomplete",
-              "failed",
-              "canceled"
-            ],
-            "description": "Processing outcome for this source. A completed result can still have null content or output when no supporting transcript evidence was verified."
-          },
-          "call_id": {
-            "type": "string",
-            "nullable": true,
-            "description": "Identifier of the call associated with this result, or null when no call was created."
+          "source": {
+            "$ref": "#/components/schemas/SearchSource"
           },
           "content": {
             "type": "string",
-            "nullable": true,
-            "description": "Concise natural-language answer to the query supported by verified transcript evidence. Null when no supported answer is available, including when processing has completed."
+            "minLength": 1,
+            "description": "Nonempty supported answer content. Sources without supported content and evidence are omitted from records."
           },
           "output": {
             "type": "object",
-            "nullable": true,
             "additionalProperties": true,
-            "description": "Values for the custom fields explicitly supplied in request.output. Partial results may omit unknown fields. Null when values or supporting transcript evidence are unavailable. This property is omitted when request.output is absent."
-          },
-          "evidence": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "enum": [
-                    "call"
-                  ]
-                },
-                "call_id": {
-                  "type": "string"
-                },
-                "quote": {
-                  "type": "string",
-                  "description": "Verbatim excerpt from the contact transcript."
-                },
-                "at_seconds": {
-                  "type": "number",
-                  "minimum": 0,
-                  "description": "Start time of the matching transcript segment, in seconds from the call timeline."
-                }
-              },
-              "required": [
-                "type",
-                "call_id",
-                "quote",
-                "at_seconds"
-              ]
-            },
-            "description": "Supporting excerpts verified against the saved contact transcript."
-          },
-          "sources": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "url": {
-                  "type": "string"
-                },
-                "title": {
-                  "type": "string"
-                },
-                "phoneExcerpt": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "url",
-                "title",
-                "phoneExcerpt"
-              ]
-            },
-            "description": "Links used to verify the contact information."
-          },
-          "verified_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "When the source identity and phone number were verified; this is not the time the answer was obtained."
-          },
-          "completed_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Call finalization timestamp, or the outcome publication time when no call finalization timestamp is available."
-          },
-          "error": {
-            "type": "string",
-            "nullable": true,
-            "description": "Result-level error code as a string, or null when no result-level error was recorded."
-          },
-          "outcome": {
-            "type": "string",
-            "nullable": true,
-            "description": "Underlying call termination reason when available, or null."
+            "description": "Supported values for requested custom fields. Omitted if none were requested or supported. Unknown or inapplicable fields are omitted. False, zero and confirmed empty lists are valid values."
           }
         },
-        "description": "A published search result. content is the concise natural-language answer, or null when no supported answer is available. output is included only when the search request explicitly supplies a custom output schema.",
-        "required": [
-          "id",
-          "rank",
-          "business",
-          "status",
-          "call_id",
-          "content",
-          "evidence",
-          "sources",
-          "verified_at",
-          "completed_at",
-          "error",
-          "outcome"
-        ],
         "example": {
-          "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
-          "rank": 1,
-          "business": {
-            "name": "Example Electronics",
-            "url": "https://example.com/electronics",
-            "phone": "+15125550123",
-            "address": "Austin, TX"
-          },
-          "status": "completed",
-          "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-          "outcome": null,
-          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
-          "evidence": [
-            {
-              "type": "call",
-              "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-              "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
-              "at_seconds": 18.2
-            }
-          ],
-          "sources": [
-            {
+          "id": "rcd_k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
+          "source": {
+            "details": {
+              "name": "Example Electronics",
               "url": "https://example.com/electronics",
-              "title": "Example Electronics contact details",
-              "phoneExcerpt": "Call +1 512-555-0123"
-            }
-          ],
-          "verified_at": "2026-11-12T15:00:12Z",
-          "completed_at": "2026-11-12T15:02:10Z",
-          "error": null
-        }
-      },
-      "SearchResultsPage": {
-        "type": "object",
-        "required": [
-          "id",
-          "status",
-          "results",
-          "next_cursor",
-          "has_more",
-          "terminal"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^search_[a-z0-9-]+$",
-            "description": "Search ID associated with this page.",
-            "example": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f"
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "discovering",
-              "running",
-              "canceling",
-              "completed",
-              "failed",
-              "canceled",
-              "expired"
-            ]
-          },
-          "results": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SearchResult"
+              "phone": "+15125550123",
+              "address": "Austin, TX"
             },
-            "maxItems": 100
-          },
-          "next_cursor": {
-            "type": "string",
-            "description": "Use for the next page or poll this cursor for future results. Returned even on an empty page."
-          },
-          "has_more": {
-            "type": "boolean",
-            "description": "More saved results exist now. False does not imply the search has finished."
-          },
-          "terminal": {
-            "type": "boolean",
-            "description": "No future results will be published for this search."
-          }
-        },
-        "example": {
-          "id": "search_6c479a30-cf06-4dba-8dc9-2d2893bbc64f",
-          "status": "completed",
-          "results": [
-            {
-              "id": "k17f0yc20e0v9g8g7hh76m6s7s9a5d2q",
-              "rank": 1,
-              "business": {
-                "name": "Example Electronics",
-                "url": "https://example.com/electronics",
-                "phone": "+15125550123",
-                "address": "Austin, TX"
-              },
-              "status": "completed",
-              "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-              "outcome": null,
-              "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.",
-              "evidence": [
-                {
-                  "type": "call",
-                  "call_id": "call_828544bf-9508-4147-b056-6198c3f2998a",
-                  "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
-                  "at_seconds": 18.2
-                }
-              ],
-              "sources": [
-                {
-                  "url": "https://example.com/electronics",
-                  "title": "Example Electronics contact details",
-                  "phoneExcerpt": "Call +1 512-555-0123"
-                }
-              ],
-              "verified_at": "2026-11-12T15:00:12Z",
-              "completed_at": "2026-11-12T15:02:10Z",
-              "error": null
-            },
-            {
-              "id": "k17b3a1s4c6d8e0f2g5h7j9k1m3n5p7q",
-              "rank": 2,
-              "business": {
-                "name": "Example Games",
-                "url": "https://example.com/games",
-                "phone": "+15125550124",
-                "address": "Austin, TX"
-              },
-              "status": "completed",
-              "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
-              "outcome": null,
-              "content": "Example Games has the Nintendo Switch 2 in stock for pickup today until 8 p.m. Central Time.",
-              "evidence": [
-                {
-                  "type": "call",
-                  "call_id": "call_946bf0ce-c7f6-497d-971b-aa77dcce9016",
-                  "quote": "The Nintendo Switch 2 is in stock. Pickup is available today until 8 p.m. Central Time.",
-                  "at_seconds": 24.5
-                }
-              ],
-              "sources": [
-                {
-                  "url": "https://example.com/games",
-                  "title": "Example Games contact details",
-                  "phoneExcerpt": "Call +1 512-555-0124"
-                }
-              ],
-              "verified_at": "2026-11-12T15:00:15Z",
-              "completed_at": "2026-11-12T15:03:05Z",
-              "error": null
+            "evidence": [
+              {
+                "quote": "We have Nintendo Switch 2 consoles in stock. You can pick one up today until 6 p.m. Central Time.",
+                "start": 18200,
+                "end": 23600
+              }
+            ],
+            "call_metadata": {
+              "duration": 30000,
+              "placed_at": "2026-11-12T15:01:25.000Z",
+              "picked_up_at": "2026-11-12T15:01:35.000Z"
             }
-          ],
-          "next_cursor": "WyJzZWFyY2hfNmM0NzlhMzAtY2YwNi00ZGJhLThkYzktMmQyODkzYmJjNjRmIiwyXQ==",
-          "has_more": false,
-          "terminal": true
+          },
+          "content": "Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time."
         }
       },
       "ErrorResponse": {
@@ -1548,6 +1876,277 @@
               }
             },
             "description": "Request-level error details with a machine-readable code and a message."
+          }
+        }
+      },
+      "SearchRequestError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "Failure of a search HTTP request. The HTTP status is determined by the error code; see the search error reference.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "invalid_request",
+              "unsupported_parameter",
+              "request_too_large",
+              "unauthorized",
+              "forbidden",
+              "not_found",
+              "idempotency_conflict",
+              "payment_required",
+              "rate_limited",
+              "service_unavailable",
+              "internal_error"
+            ],
+            "description": "Stable machine-readable code. Branch on this value rather than message text."
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 240,
+            "description": "Safe human-readable explanation, bounded to 240 UTF-8 bytes."
+          }
+        }
+      },
+      "SearchRequestErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/SearchRequestError"
+          }
+        }
+      },
+      "SearchOutcomeError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "Explains a settled search with no records. Specific search failures take precedence over no_results. Completed searches omit error; a successful GET still returns HTTP 200 when the search failed.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "preparation_failed",
+              "discovery_failed",
+              "deadline_exceeded",
+              "internal_error",
+              "no_results"
+            ],
+            "description": "Stable machine-readable code. Branch on this value rather than message text."
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 240,
+            "description": "Safe human-readable explanation, bounded to 240 UTF-8 bytes."
+          }
+        }
+      },
+      "SourceError": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message"
+        ],
+        "description": "Legacy source-error shape retained only for frozen webhook deliveries created before answer-only records. Current search records never expose this field.",
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "preparation_failed",
+              "call_failed",
+              "transcript_unavailable",
+              "extraction_failed",
+              "completeness_unverified",
+              "deadline_exceeded",
+              "no_usable_answer",
+              "result_too_large",
+              "internal_error"
+            ],
+            "description": "Stable machine-readable code. Branch on this value rather than message text."
+          },
+          "message": {
+            "type": "string",
+            "maxLength": 240,
+            "description": "Safe human-readable explanation, bounded to 240 UTF-8 bytes."
+          }
+        },
+        "deprecated": true
+      },
+      "SearchSourceDetails": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Known source identity. Unknown properties are omitted.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Phone number in E.164 format."
+          },
+          "address": {
+            "type": "string"
+          }
+        }
+      },
+      "SearchSourceEvidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "quote",
+          "start",
+          "end"
+        ],
+        "description": "Verified callee quote with millisecond offsets on the original call transcript clock, not relative to placed_at. Later audio alignment can refine these bounds.",
+        "properties": {
+          "quote": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Verbatim supported callee speech, including eligible business announcements."
+          },
+          "start": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "Start offset in milliseconds, retaining available fractional precision. Uses audio alignment or verified transcript timing; null when unavailable."
+          },
+          "end": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "End offset in milliseconds on the same clock, at or after start. Uses audio alignment or verified transcript timing; null when unavailable."
+          }
+        }
+      },
+      "SearchSource": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "details",
+          "evidence",
+          "call_metadata"
+        ],
+        "description": "The called source and transcript evidence supporting this result.",
+        "properties": {
+          "details": {
+            "$ref": "#/components/schemas/SearchSourceDetails"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchSourceEvidence"
+            },
+            "description": "Supporting callee quotes. Unknown bounds are null. Later timing enrichment does not change the answer, search status, terminal duration or saved webhook payloads.",
+            "minItems": 1
+          },
+          "call_metadata": {
+            "$ref": "#/components/schemas/SearchCallMetadata"
+          }
+        }
+      },
+      "SearchCallMetadata": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "duration",
+          "placed_at"
+        ],
+        "description": "Timing of the destination phone call. Setup, result processing and recording length are excluded; unavailable historical timing remains unknown.",
+        "properties": {
+          "duration": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "description": "Connected milliseconds from pickup to hangup. Zero only for a confirmed unanswered call. Null when timing is unavailable or inconsistent.",
+            "example": 30000
+          },
+          "placed_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Dial submission time once the destination call is confirmed to exist. Null if unplaced or unavailable.",
+            "example": "2026-11-12T15:01:25.000Z"
+          },
+          "picked_up_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Confirmed business pickup time. Omitted if unknown or unanswered. IVR or voicemail pickup counts; this does not prove a human answered.",
+            "example": "2026-11-12T15:01:35.000Z"
+          }
+        },
+        "example": {
+          "duration": 30000,
+          "placed_at": "2026-11-12T15:01:25.000Z",
+          "picked_up_at": "2026-11-12T15:01:35.000Z"
+        }
+      },
+      "Identity": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Temporary caller configuration; does not inherit the environment default. Omitted phoneNumber and name use auto; omitted voice uses the catalog default. Null or empty supplied values are invalid.",
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "default": "auto",
+            "pattern": "^(auto|\\+[1-9]\\d{6,14})$",
+            "description": "Outbound caller number. auto chooses an enabled workspace number in this environment, preferring the destination locality. Otherwise use an enabled workspace number in E.164 format."
+          },
+          "name": {
+            "type": "string",
+            "default": "auto",
+            "minLength": 1,
+            "pattern": "^\\s*\\S[\\s\\S]{0,99}\\s*$",
+            "description": "Caller name, 1–100 characters after trimming. auto generates one name and reuses it throughout this search."
+          },
+          "behalfOf": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name"
+            ],
+            "description": "Who the caller represents. Omit the object when there is no beneficiary.",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^\\s*\\S[\\s\\S]{0,99}\\s*$",
+                "description": "Person or organization represented by the caller, 1–100 characters after trimming."
+              },
+              "relationship": {
+                "type": "string",
+                "default": "my colleague",
+                "minLength": 1,
+                "pattern": "^\\s*\\S[\\s\\S]{0,199}\\s*$",
+                "description": "Beneficiary’s relationship to the caller, 1–200 characters after trimming. Omitted uses my colleague."
+              }
+            }
+          },
+          "voice": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^\\s*[a-z0-9][a-z0-9_-]{0,99}\\s*$",
+            "description": "Active standard voice key from Settings → Identities, 1–100 characters after trimming. Copy the key, not the display label. Omitted uses the catalog default."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^\\s*\\S[\\s\\S]{0,999}\\s*$",
+            "description": "Caller context, 1–1000 characters after trimming. Does not override the query or call rules."
           }
         }
       }
@@ -1574,7 +2173,7 @@
         }
       },
       "NotFound": {
-        "description": "No matching search in this key\u2019s workspace and environment, or the endpoint does not exist.",
+        "description": "No matching search in this key’s workspace and environment, or the endpoint does not exist.",
         "content": {
           "application/json": {
             "schema": {
@@ -1594,11 +2193,29 @@
         }
       },
       "RateLimited": {
-        "description": "The workspace/environment already has 20 unfinished searches. Existing searches continue; submit new work after capacity is available.",
+        "description": "A workspace or service backlog safety bound is full. No search or credit hold is created; existing searches continue. Workspace start pacing and occupied call slots alone cause queuing, not this rejection. Honor Retry-After before resubmitting.",
         "content": {
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        },
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds to wait before another admission attempt.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "X-Thred-Overload-Reason": {
+            "description": "The specific admission safety bound class.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "search_backlog_limit"
+              ]
             }
           }
         }
@@ -1619,6 +2236,263 @@
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "SearchHttp400": {
+        "description": "Invalid search input or unsupported result-pagination parameters. Validation messages identify the field to correct.",
+        "x-error-codes": [
+          "invalid_request",
+          "unsupported_parameter"
+        ],
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SearchRequestErrorResponse"
+            },
+            "examples": {
+              "invalid_request": {
+                "value": {
+                  "error": {
+                    "code": "invalid_request",
+                    "message": "The search request is invalid."
+                  }
+                }
+              },
+              "unsupported_parameter": {
+                "value": {
+                  "error": {
+                    "code": "unsupported_parameter",
+                    "message": "Search results are a full snapshot. Omit cursor and limit."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SearchHttp401": {
+        "description": "A valid API key is required.",
+        "x-error-codes": [
+          "unauthorized"
+        ],
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SearchRequestErrorResponse"
+            },
+            "examples": {
+              "unauthorized": {
+                "value": {
+                  "error": {
+                    "code": "unauthorized",
+                    "message": "A valid API key is required."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SearchHttp402": {
+        "description": "Insufficient available credit for a new search.",
+        "x-error-codes": [
+          "payment_required"
+        ],
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SearchRequestErrorResponse"
+            },
+            "examples": {
+              "payment_required": {
+                "value": {
+                  "error": {
+                    "code": "payment_required",
+                    "message": "Add funds before starting another search."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SearchHttp403": {
+        "description": "The requested action is not permitted.",
+        "x-error-codes": [
+          "forbidden"
+        ],
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SearchRequestErrorResponse"
+            },
+            "examples": {
+              "forbidden": {
+                "value": {
+                  "error": {
+                    "code": "forbidden",
+                    "message": "This action is not permitted."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SearchHttp404": {
+        "description": "No matching resource in the current workspace/environment, or the endpoint does not exist.",
+        "x-error-codes": [
+          "not_found"
+        ],
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SearchRequestErrorResponse"
+            },
+            "examples": {
+              "not_found": {
+                "value": {
+                  "error": {
+                    "code": "not_found",
+                    "message": "The requested resource was not found."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SearchHttp409": {
+        "description": "The idempotency key was already used with different request parameters.",
+        "x-error-codes": [
+          "idempotency_conflict"
+        ],
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SearchRequestErrorResponse"
+            },
+            "examples": {
+              "idempotency_conflict": {
+                "value": {
+                  "error": {
+                    "code": "idempotency_conflict",
+                    "message": "This idempotency key was used with different parameters."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SearchHttp413": {
+        "description": "The request exceeds the 64 KiB limit.",
+        "x-error-codes": [
+          "request_too_large"
+        ],
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SearchRequestErrorResponse"
+            },
+            "examples": {
+              "request_too_large": {
+                "value": {
+                  "error": {
+                    "code": "request_too_large",
+                    "message": "The request exceeds the 64 KiB limit."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SearchHttp429": {
+        "description": "A workspace or service backlog safety bound is full. No search or credit hold is created; existing searches continue. Workspace start pacing and occupied call slots alone cause queuing, not this rejection. Honor Retry-After before resubmitting.",
+        "x-error-codes": [
+          "rate_limited"
+        ],
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SearchRequestErrorResponse"
+            },
+            "examples": {
+              "rate_limited": {
+                "value": {
+                  "error": {
+                    "code": "rate_limited",
+                    "message": "Search capacity is currently full. Try again later."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "headers": {
+          "Retry-After": {
+            "description": "Seconds to wait before another admission attempt.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "X-Thred-Overload-Reason": {
+            "description": "The specific admission safety bound class.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "search_backlog_limit"
+              ]
+            }
+          }
+        }
+      },
+      "SearchHttp503": {
+        "description": "Search is unavailable because of service connectivity, configuration or reconciliation. Detailed causes remain internal.",
+        "x-error-codes": [
+          "service_unavailable"
+        ],
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SearchRequestErrorResponse"
+            },
+            "examples": {
+              "service_unavailable": {
+                "value": {
+                  "error": {
+                    "code": "service_unavailable",
+                    "message": "Search is currently unavailable."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SearchHttp500": {
+        "description": "An unexpected technical error prevented the request from completing.",
+        "x-error-codes": [
+          "internal_error"
+        ],
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SearchRequestErrorResponse"
+            },
+            "examples": {
+              "internal_error": {
+                "value": {
+                  "error": {
+                    "code": "internal_error",
+                    "message": "The request could not be completed."
+                  }
+                }
+              }
             }
           }
         }

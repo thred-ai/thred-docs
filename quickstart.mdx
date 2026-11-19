@@ -26,9 +26,9 @@ curl https://api.thred.dev/search \
   }'
 ```
 
-The response returns a search `id`. Copy it into `THRED_SEARCH_ID` below.
+`results` accepts 1–10 and limits how many distinct sources Thred can call. The API returns HTTP `202` with a search `id` beginning with `sch_`. Copy that ID below.
 
-## 3. Read the results
+## 3. Read the answers
 
 ```bash
 export THRED_SEARCH_ID="SEARCH_ID_FROM_CREATE_RESPONSE"
@@ -37,12 +37,10 @@ curl "https://api.thred.dev/search/$THRED_SEARCH_ID/results" \
   -H "Authorization: Bearer $THRED_API_KEY"
 ```
 
-Read answers from `content`, for example:
+Read answers from `records[].content`, alongside their sources and supporting evidence. For example:
 
 > Example Electronics has the Nintendo Switch 2 in stock for pickup today until 6 p.m. Central Time.
 
-This is a fictional example. Results also include source details and supporting evidence.
+Repeat the GET while `status` is `running`. Stop when it becomes `completed` or `failed`. Each response contains the full current set of records, so replace the previous snapshot instead of appending it.
 
-Searches run asynchronously. Repeat the GET while `terminal` is false. Pass `next_cursor` as `cursor` to continue from the last page, and read remaining pages while `has_more` is true.
-
-See [Create a search](/api-reference/create-search) for options and [Get search results](/api-reference/search-results) for the response fields.
+See [Create a search](/api-reference/create-search) for options and [Get search records](/api-reference/search-results) for response fields. All examples use fictional sources.
